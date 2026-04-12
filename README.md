@@ -7,7 +7,16 @@ Monorepo NestJS con tres microservicios y una librería compartida:
 - `apps/access-service` (hexagonal: API + application + infraestructura)
 - `libs/common` (guards, decorators, payload JWT y DTO base)
 
-## Scripts
+## Levantar con Docker (recomendado)
+
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose logs -f nginx auth-service members-service access-service
+docker compose down
+```
+
+## Scripts npm (atajos)
 
 ```bash
 npm run build
@@ -25,9 +34,9 @@ npm run docker:down
 
 - `docker-compose.yml`: PostgreSQL 16, MongoDB 7, Redis 7 (AOF), Mosquitto 2, Nginx y los 3 servicios.
 - `nginx.conf`: rutas por prefijo:
-    - `/api/auth/* -> auth-service:3000`
-    - `/api/members/* -> members-service:3001`
-    - `/api/access/* -> access-service:3002`
+      - `/api/auth/* -> auth-service:3000`
+      - `/api/members/* -> members-service:3001`
+      - `/api/access/* -> access-service:3002`
 - `init.sql`: crea schemas `auth` y `members` + datos semilla.
 - `init-mongo.js`: crea `taurus_access` (`access_logs`, `audit_trail`) + datos semilla.
 
