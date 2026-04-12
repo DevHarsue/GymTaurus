@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "esModuleInterop": true,
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "ES2021",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "incremental": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitAny": true,
+        "noUncheckedIndexedAccess": true,
+        "strictBindCallApply": true,
+        "noFallthroughCasesInSwitch": true,
+        "paths": {
+            "@libs/common": ["./libs/common/src"],
+            "@libs/common/*": ["./libs/common/src/*"]
+        }
+    }
+}
