@@ -6,13 +6,13 @@ export type AccessLogDocument = HydratedDocument<AccessLog>;
 @Schema({ collection: 'access_logs', versionKey: false })
 export class AccessLog {
     @Prop({ required: true })
-    memberId!: string;
+    member_id!: string;
 
     @Prop({ required: true })
-    fingerprintId!: number;
+    fingerprint_id!: number;
 
     @Prop({ required: true })
-    memberName!: string;
+    member_name!: string;
 
     @Prop({ required: true })
     granted!: boolean;
@@ -21,7 +21,7 @@ export class AccessLog {
     reason!: string;
 
     @Prop({ required: true })
-    deviceId!: string;
+    device_id!: string;
 
     @Prop({ required: true })
     timestamp!: Date;
@@ -30,13 +30,13 @@ export class AccessLog {
     synced!: boolean;
 
     @Prop({ type: Date, default: null })
-    checkedOutAt?: Date | null;
+    checked_out_at?: Date | null;
 
     @Prop({ type: String, default: null, enum: ['manual', 'timeout', null] })
-    checkoutMethod?: string | null;
+    checkout_method?: string | null;
 
     @Prop({ type: Number, default: null })
-    durationMinutes?: number | null;
+    duration_minutes?: number | null;
 }
 
 export const AccessLogSchema = SchemaFactory.createForClass(AccessLog);
