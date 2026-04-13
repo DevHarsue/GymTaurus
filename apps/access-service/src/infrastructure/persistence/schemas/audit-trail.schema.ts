@@ -19,16 +19,16 @@ export class AuditTrail {
     action!: string;
 
     @Prop({ type: String, default: null })
-    actorId?: string | null;
+    actor_id?: string | null;
 
     @Prop({ type: String, default: null })
-    actorEmail?: string | null;
+    actor_email?: string | null;
 
     @Prop({ required: true, enum: ['member', 'system'] })
-    targetType!: string;
+    target_type!: string;
 
     @Prop({ type: String, default: null })
-    targetId?: string | null;
+    target_id?: string | null;
 
     @Prop({ type: Object, default: {} })
     details!: Record<string, unknown>;
