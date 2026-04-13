@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { DeviceEntity } from './infrastructure/persistence/entities/device.entity';
@@ -13,6 +14,7 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
+        ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({

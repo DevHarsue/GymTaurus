@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MembersProcessor } from './jobs/members.processor';
+
 import { RedisEventPublisher } from './messaging/redis-event-publisher';
 import { RedisCacheService } from './cache/redis-cache.service';
 import { DeviceEntity } from './persistence/entities/device.entity';
@@ -30,7 +30,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         SubscriptionRepository,
         RedisCacheService,
         RedisEventPublisher,
-        MembersProcessor,
+
         { provide: 'MemberRepositoryPort', useExisting: MemberRepository },
         { provide: 'PlanRepositoryPort', useExisting: PlanRepository },
         {
@@ -46,6 +46,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         'SubscriptionRepositoryPort',
         'CachePort',
         'EventPublisherPort',
+        BullModule,
     ],
 })
 export class InfrastructureModule {}

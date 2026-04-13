@@ -41,7 +41,8 @@
             "entryFile": "main",
             "sourceRoot": "apps/members-service/src",
             "compilerOptions": {
-                "tsConfigPath": "apps/members-service/tsconfig.app.json"
+                "tsConfigPath": "apps/members-service/tsconfig.app.json",
+                "plugins": ["@nestjs/swagger"]
             }
         }
     }
