@@ -41,7 +41,8 @@ export class AuthController {
     @Get('health')
     @ApiOperation({
         summary: 'Health check',
-        description: 'Verifica que el auth-service está corriendo correctamente. No requiere autenticación.',
+        description:
+            'Verifica que el auth-service está corriendo correctamente. No requiere autenticación.',
     })
     health(): { service: string; status: string } {
         return { service: 'auth-service', status: 'ok' };
@@ -60,9 +61,16 @@ export class AuthController {
             'Si el email ya existe, retorna 409 Conflict. ' +
             'No genera tokens — el usuario creado debe hacer login por separado.',
     })
-    @ApiCreatedResponse({ type: RegisterResponseDto, description: 'Usuario creado exitosamente' })
-    @ApiConflictResponse({ description: 'El email ya está registrado en el sistema' })
-    @ApiUnauthorizedResponse({ description: 'No autenticado o no tiene rol admin' })
+    @ApiCreatedResponse({
+        type: RegisterResponseDto,
+        description: 'Usuario creado exitosamente',
+    })
+    @ApiConflictResponse({
+        description: 'El email ya está registrado en el sistema',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'No autenticado o no tiene rol admin',
+    })
     register(@Body() dto: RegisterRequestDto) {
         return this.authService.register(dto.email, dto.password, dto.role);
     }
@@ -78,8 +86,13 @@ export class AuthController {
             'Se permite tener múltiples sesiones activas (ej: celular + computadora). ' +
             'Los refresh tokens expirados del usuario se limpian automáticamente en cada login.',
     })
-    @ApiOkResponse({ type: LoginResponseDto, description: 'Login exitoso, retorna tokens y datos del usuario' })
-    @ApiUnauthorizedResponse({ description: 'Email no encontrado o contraseña incorrecta' })
+    @ApiOkResponse({
+        type: LoginResponseDto,
+        description: 'Login exitoso, retorna tokens y datos del usuario',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Email no encontrado o contraseña incorrecta',
+    })
     login(@Body() dto: LoginRequestDto) {
         return this.authService.login(dto.email, dto.password);
     }
@@ -94,8 +107,13 @@ export class AuthController {
             'y se genera uno nuevo. Esto significa que cada refresh token solo puede usarse una vez. ' +
             'Si el token ya fue usado, no existe, o está expirado, retorna 401.',
     })
-    @ApiOkResponse({ type: RefreshResponseDto, description: 'Tokens renovados exitosamente' })
-    @ApiUnauthorizedResponse({ description: 'Refresh token inválido, expirado o ya utilizado' })
+    @ApiOkResponse({
+        type: RefreshResponseDto,
+        description: 'Tokens renovados exitosamente',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Refresh token inválido, expirado o ya utilizado',
+    })
     refresh(@Body() dto: RefreshTokenRequestDto) {
         return this.authService.refresh(dto.refreshToken);
     }
@@ -110,8 +128,13 @@ export class AuthController {
             'Requiere un access token válido en el header Authorization (Bearer). ' +
             'Usado por la app móvil para obtener el perfil del usuario logueado.',
     })
-    @ApiOkResponse({ type: RegisterResponseDto, description: 'Datos del usuario autenticado' })
-    @ApiUnauthorizedResponse({ description: 'Token JWT ausente, inválido o expirado' })
+    @ApiOkResponse({
+        type: RegisterResponseDto,
+        description: 'Datos del usuario autenticado',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Token JWT ausente, inválido o expirado',
+    })
     getProfile(@CurrentUser() user: JwtPayload) {
         return this.authService.getProfile(user.sub);
     }
@@ -129,7 +152,9 @@ export class AuthController {
             'Requiere un access token válido en el header Authorization.',
     })
     @ApiOkResponse({ description: 'Sesión cerrada exitosamente' })
-    @ApiUnauthorizedResponse({ description: 'Token JWT ausente, inválido o expirado' })
+    @ApiUnauthorizedResponse({
+        description: 'Token JWT ausente, inválido o expirado',
+    })
     async logout(@Body() dto: LogoutRequestDto) {
         await this.authService.logout(dto.refreshToken);
         return { message: 'Logged out successfully' };

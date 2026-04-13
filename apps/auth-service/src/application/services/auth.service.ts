@@ -141,9 +141,7 @@ export class AuthService {
             'JWT_REFRESH_EXPIRES_IN',
             '7d',
         );
-        const expiresAt = new Date(
-            Date.now() + this.parseExpiresIn(expiresIn),
-        );
+        const expiresAt = new Date(Date.now() + this.parseExpiresIn(expiresIn));
 
         await this.refreshTokenRepository.create({
             userId,
