@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DEVICE_HEARTBEAT_QUEUE_NAME } from '../application/constants/device-heartbeat.constants';
-import { MockMemberStatusService } from './integrations/mock-member-status.service';
+import { MembersHttpStatusService } from './integrations/members-http-status.service';
 import { AccessJobsScheduler } from './jobs/access-jobs.scheduler';
 import { RedisCacheService } from './cache/redis-cache.service';
 import { AccessProcessor } from './jobs/access.processor';
@@ -30,7 +30,7 @@ import {
         AccessLogRepository,
         RedisCacheService,
         RedisEventPublisher,
-        MockMemberStatusService,
+        MembersHttpStatusService,
         AccessJobsScheduler,
         AccessProcessor,
         DeviceHeartbeatMonitorService,
@@ -40,7 +40,7 @@ import {
         },
         { provide: 'CachePort', useExisting: RedisCacheService },
         { provide: 'EventPublisherPort', useExisting: RedisEventPublisher },
-        { provide: 'MemberStatusPort', useExisting: MockMemberStatusService },
+        { provide: 'MemberStatusPort', useExisting: MembersHttpStatusService },
     ],
     exports: [
         'AccessLogRepositoryPort',

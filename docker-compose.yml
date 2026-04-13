@@ -124,6 +124,7 @@ services:
         environment:
             ACCESS_SERVICE_PORT: 3002
             ACCESS_MONGO_URI: mongodb://mongo:27017/taurus_access
+            MEMBERS_SERVICE_BASE_URL: ${MEMBERS_SERVICE_BASE_URL:-http://members-service:3001}
             REDIS_HOST: redis
             REDIS_PORT: 6379
             MQTT_URL: mqtt://mosquitto:1883
