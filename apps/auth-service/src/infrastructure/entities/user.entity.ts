@@ -6,6 +6,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { Role } from '@libs/common';
 import { RefreshTokenEntity } from './refresh-token.entity';
 
 @Entity({ schema: 'auth', name: 'users' })
@@ -20,7 +21,7 @@ export class UserEntity {
     passwordHash!: string;
 
     @Column({ type: 'varchar', length: 20 })
-    role!: string;
+    role!: Role;
 
     @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt!: Date;
