@@ -117,6 +117,10 @@ INSERT INTO members.membership_plans (name, duration_days, reference_price, is_a
 INSERT INTO members.devices (device_code, name, location, status) VALUES
     ('esp32-recepcion', 'Nodo recepción', 'Entrada principal', 'offline');
 
+-- Admin seed user (password: Admin123!)
+INSERT INTO auth.users (email, password_hash, role) VALUES
+    ('admin@taurus.gym', '$2b$10$oKHOveyfZQsE13yINjUaZerY5kBigu0LawfqPgZUf9nGeWohxiInq', 'admin');
+
 -- ============================================================
 -- FUNCIÓN: actualizar updated_at automáticamente
 -- ============================================================
