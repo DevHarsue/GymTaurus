@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
+import { JwtStrategy } from '@libs/common';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { DeviceEntity } from './infrastructure/persistence/entities/device.entity';
@@ -14,6 +16,7 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
+        PassportModule.register({ defaultStrategy: 'jwt' }),
         ScheduleModule.forRoot(),
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
@@ -56,5 +59,6 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
         ApplicationModule,
         ApiModule,
     ],
+    providers: [JwtStrategy],
 })
 export class AppModule {}

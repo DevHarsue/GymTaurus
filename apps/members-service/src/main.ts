@@ -20,6 +20,7 @@ async function bootstrap() {
         .setVersion('1.0')
         // Important: Add standard server path for Nginx rewriting logic
         .addServer('/api/')
+        .addBearerAuth()
         .build();
     
     const document = SwaggerModule.createDocument(app, config);

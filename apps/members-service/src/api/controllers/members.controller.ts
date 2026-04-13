@@ -1,5 +1,34 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiNotFoundResponse, ApiBadRequestResponse, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    ParseIntPipe,
+    Post,
+    Put,
+    Query,
+    UseGuards,
+} from '@nestjs/common';
+import {
+    ApiBadRequestResponse,
+    ApiBearerAuth,
+    ApiNotFoundResponse,
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
+import {
+    CurrentUser,
+    JwtAuthGuard,
+    type JwtPayload,
+    Role,
+    Roles,
+    RolesGuard,
+} from '@libs/common';
 import { MembersService } from '../../application/services/members.service';
 import { SubscriptionsService } from '../../application/services/subscriptions.service';
 import { CreateMemberDto } from '../dtos/create-member.dto';
@@ -26,14 +55,21 @@ export class MembersController {
     ) {}
 
     @Get('health')
-    @ApiOperation({ summary: 'Verificar el estado de salud del servicio de miembros' })
+    @ApiOperation({
+        summary: 'Verificar el estado de salud del servicio de miembros',
+    })
     health(): { service: string; status: string } {
         return { service: 'members-service', status: 'ok' };
     }
 
     @Post()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Crear un nuevo miembro del gimnasio' })
-    @ApiBadRequestResponse({ description: 'Datos inválidos o cédula/huella duplicada' })
+    @ApiBadRequestResponse({
+        description: 'Datos inválidos o cédula/huella duplicada',
+    })
     @ApiResponse({ status: 201, description: 'Miembro creado exitosamente' })
     async create(@Body() payload: CreateMemberDto) {
         const member = await this.membersService.createMember(payload);
@@ -46,11 +82,32 @@ export class MembersController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'Listar todos los miembros con paginación y filtros' })
-    @ApiQuery({ name: 'status', required: false, enum: ['active', 'expired'], description: 'Filtrar por estado de suscripción' })
-    @ApiQuery({ name: 'search', required: false, description: 'Buscar por nombre o cédula' })
-    @ApiQuery({ name: 'page', required: false, description: 'Número de página' })
-    @ApiQuery({ name: 'limit', required: false, description: 'Cantidad de resultados por página' })
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Listar todos los miembros con paginación y filtros',
+    })
+    @ApiQuery({
+        name: 'status',
+        required: false,
+        enum: ['active', 'expired'],
+        description: 'Filtrar por estado de suscripción',
+    })
+    @ApiQuery({
+        name: 'search',
+        required: false,
+        description: 'Buscar por nombre o cédula',
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        description: 'Número de página',
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        description: 'Cantidad de resultados por página',
+    })
     async findAll(
         @Query('status') status?: 'active' | 'expired',
         @Query('search') search?: string,
@@ -65,19 +122,28 @@ export class MembersController {
         });
     }
 
-    private async buildMemberResponse(memberId: string): Promise<MemberResponse> {
+    private async buildMemberResponse(
+        memberId: string,
+    ): Promise<MemberResponse> {
         const member = await this.membersService.getMember(memberId);
         if (!member) {
-            throw new NotFoundException(`Miembro con ID ${memberId} no encontrado`);
+            throw new NotFoundException(
+                `Miembro con ID ${memberId} no encontrado`,
+            );
         }
 
-        const activeSub = await this.subscriptionsService.getActiveSubscription(member.id);
+        const activeSub = await this.subscriptionsService.getActiveSubscription(
+            member.id,
+        );
         const now = new Date();
         let daysLeft = 0;
         let subStatus = 'expired';
 
         if (activeSub && new Date(activeSub.expiresAt) > now) {
-            daysLeft = Math.ceil((new Date(activeSub.expiresAt).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            daysLeft = Math.ceil(
+                (new Date(activeSub.expiresAt).getTime() - now.getTime()) /
+                    (1000 * 60 * 60 * 24),
+            );
             subStatus = 'active';
         }
 
@@ -94,15 +160,24 @@ export class MembersController {
     }
 
     @Get('by-fingerprint/:fpId')
-    @ApiOperation({ summary: 'Validación rápida de miembro por lector de huellas IoT' })
-    @ApiParam({ name: 'fpId', description: 'ID de huella almacenado en el sensor biométrico' })
-    @ApiNotFoundResponse({ description: 'No se encontró ningún miembro con esa huella' })
+    @ApiOperation({
+        summary: 'Validación rápida de miembro por lector de huellas IoT',
+    })
+    @ApiParam({
+        name: 'fpId',
+        description: 'ID de huella almacenado en el sensor biométrico',
+    })
+    @ApiNotFoundResponse({
+        description: 'No se encontró ningún miembro con esa huella',
+    })
     async findByFingerprint(@Param('fpId', ParseIntPipe) fpId: number) {
         const member = await this.membersService.findByFingerprintId(fpId);
         if (!member) {
-            throw new NotFoundException('Miembro no encontrado para esa huella');
+            throw new NotFoundException(
+                'Miembro no encontrado para esa huella',
+            );
         }
-        
+
         const response = await this.buildMemberResponse(member.id);
         return {
             id: response.id,
@@ -113,7 +188,11 @@ export class MembersController {
     }
 
     @Get(':id/status')
-    @ApiOperation({ summary: 'Obtener el estado actual de la suscripción de un miembro' })
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Obtener el estado actual de la suscripción de un miembro',
+    })
     @ApiParam({ name: 'id', description: 'UUID del miembro' })
     @ApiNotFoundResponse({ description: 'Miembro no encontrado' })
     async getStatus(@Param('id') id: string) {
@@ -127,7 +206,11 @@ export class MembersController {
     }
 
     @Get(':id')
-    @ApiOperation({ summary: 'Obtener detalles completos de un miembro por ID' })
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Obtener detalles completos de un miembro por ID',
+    })
     @ApiParam({ name: 'id', description: 'UUID del miembro' })
     @ApiNotFoundResponse({ description: 'Miembro no encontrado' })
     async findById(@Param('id') id: string) {
@@ -135,6 +218,9 @@ export class MembersController {
     }
 
     @Put(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Actualizar el perfil de un miembro existente' })
     @ApiParam({ name: 'id', description: 'UUID del miembro' })
     @ApiNotFoundResponse({ description: 'Miembro no encontrado' })
@@ -143,6 +229,9 @@ export class MembersController {
     }
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Eliminar un miembro del sistema' })
     @ApiParam({ name: 'id', description: 'UUID del miembro' })
     @ApiNotFoundResponse({ description: 'Miembro no encontrado' })
@@ -152,15 +241,24 @@ export class MembersController {
     }
 
     @Post(':id/renew')
-    @ApiOperation({ summary: 'Comprar o renovar un plan de suscripción para un miembro' })
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Comprar o renovar un plan de suscripción para un miembro',
+    })
     @ApiParam({ name: 'id', description: 'UUID del miembro' })
     @ApiNotFoundResponse({ description: 'Miembro o Plan no encontrado' })
     @ApiBadRequestResponse({ description: 'Plan seleccionado no válido' })
     async renew(
         @Param('id') id: string,
         @Body() payload: RenewSubscriptionDto,
+        @CurrentUser() user: JwtPayload,
     ) {
-        const adminId = '00000000-0000-0000-0000-000000000000';
-        return this.subscriptionsService.renewSubscription(id, payload, adminId);
+        return this.subscriptionsService.renewSubscription(
+            id,
+            payload,
+            user.sub,
+        );
     }
 }

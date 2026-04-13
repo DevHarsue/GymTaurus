@@ -105,6 +105,7 @@ services:
             MEMBERS_DB_NAME: ${MEMBERS_DB_NAME:-taurus}
             MEMBERS_DB_USER: ${POSTGRES_USER:-taurus}
             MEMBERS_DB_PASSWORD: ${POSTGRES_PASSWORD:-taurus}
+            JWT_SECRET: ${JWT_SECRET:-change-me}
             REDIS_HOST: redis
             REDIS_PORT: 6379
             MQTT_URL: mqtt://mosquitto:1883
