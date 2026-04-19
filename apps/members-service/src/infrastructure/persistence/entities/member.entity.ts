@@ -16,6 +16,9 @@ export class MemberEntity {
     @Column({ type: 'uuid', name: 'user_id', unique: true })
     userId!: string;
 
+    @Column({ type: 'uuid', name: 'created_by' })
+    createdBy!: string;
+
     @Column({ type: 'varchar', length: 255 })
     name!: string;
 

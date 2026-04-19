@@ -41,7 +41,7 @@ interface MemberResponse {
     cedula: string;
     phone?: string;
     email?: string;
-    status: string;
+    subscriptionStatus: string;
     daysLeft: number;
     fingerprintId?: number;
 }
@@ -71,14 +71,21 @@ export class MembersController {
         description: 'Datos inválidos o cédula/huella duplicada',
     })
     @ApiResponse({ status: 201, description: 'Miembro creado exitosamente' })
-    async create(@Body() payload: CreateMemberDto) {
-        const member = await this.membersService.createMember(payload);
-        return {
+    async create(
+        @Body() payload: CreateMemberDto,
+        @CurrentUser() user: JwtPayload,
+    ) {
+        const member = await this.membersService.createMember(payload, user.sub);
+        const response: Record<string, unknown> = {
             id: member.id,
             name: member.name,
             cedula: member.cedula,
             status: 'expired',
         };
+        if (member.temporaryPassword) {
+            response.temporaryPassword = member.temporaryPassword;
+        }
+        return response;
     }
 
     @Get()
@@ -90,7 +97,7 @@ export class MembersController {
     @ApiQuery({
         name: 'status',
         required: false,
-        enum: ['active', 'expired'],
+        enum: ['active', 'expired', 'none'],
         description: 'Filtrar por estado de suscripción',
     })
     @ApiQuery({
@@ -109,7 +116,7 @@ export class MembersController {
         description: 'Cantidad de resultados por página',
     })
     async findAll(
-        @Query('status') status?: 'active' | 'expired',
+        @Query('status') status?: 'active' | 'expired' | 'none',
         @Query('search') search?: string,
         @Query('page') page?: string,
         @Query('limit') limit?: string,
@@ -132,19 +139,21 @@ export class MembersController {
             );
         }
 
-        const activeSub = await this.subscriptionsService.getActiveSubscription(
+        const allSubs = await this.subscriptionsService.getActiveSubscription(
             member.id,
         );
         const now = new Date();
         let daysLeft = 0;
-        let subStatus = 'expired';
+        let subscriptionStatus: 'active' | 'expired' | 'none' = 'none';
 
-        if (activeSub && new Date(activeSub.expiresAt) > now) {
+        if (allSubs && new Date(allSubs.expiresAt) > now) {
             daysLeft = Math.ceil(
-                (new Date(activeSub.expiresAt).getTime() - now.getTime()) /
+                (new Date(allSubs.expiresAt).getTime() - now.getTime()) /
                     (1000 * 60 * 60 * 24),
             );
-            subStatus = 'active';
+            subscriptionStatus = 'active';
+        } else if (allSubs) {
+            subscriptionStatus = 'expired';
         }
 
         return {
@@ -153,7 +162,7 @@ export class MembersController {
             cedula: member.cedula,
             phone: member.phone,
             email: member.email,
-            status: subStatus,
+            subscriptionStatus,
             daysLeft,
             fingerprintId: member.fingerprintId,
         };
@@ -182,7 +191,7 @@ export class MembersController {
         return {
             id: response.id,
             name: response.name,
-            active: response.status === 'active',
+            active: response.subscriptionStatus === 'active',
             daysLeft: response.daysLeft,
         };
     }
@@ -199,7 +208,7 @@ export class MembersController {
         const response = await this.buildMemberResponse(id);
         return {
             name: response.name,
-            active: response.status === 'active',
+            active: response.subscriptionStatus === 'active',
             daysLeft: response.daysLeft,
             fingerprintId: response.fingerprintId,
         };

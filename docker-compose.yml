@@ -109,6 +109,7 @@ services:
             REDIS_HOST: redis
             REDIS_PORT: 6379
             MQTT_URL: mqtt://mosquitto:1883
+            AUTH_SERVICE_BASE_URL: ${AUTH_SERVICE_BASE_URL:-http://auth-service:3000}
         depends_on:
             postgres:
                 condition: service_healthy

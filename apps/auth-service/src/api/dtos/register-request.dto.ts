@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { Role } from '@libs/common';
 
 export class RegisterRequestDto {
@@ -12,7 +12,8 @@ export class RegisterRequestDto {
     @MinLength(8)
     password!: string;
 
-    @ApiProperty({ enum: Role, example: Role.MEMBER })
+    @ApiPropertyOptional({ enum: Role, example: Role.MEMBER })
+    @IsOptional()
     @IsEnum(Role)
-    role!: Role;
+    role?: Role;
 }
