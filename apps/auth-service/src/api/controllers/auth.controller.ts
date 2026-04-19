@@ -19,6 +19,7 @@ import {
 import {
     CurrentUser,
     JwtAuthGuard,
+    OptionalJwtAuthGuard,
     type JwtPayload,
     Role,
     Roles,
@@ -49,14 +50,15 @@ export class AuthController {
     }
 
     @Post('register')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.ADMIN)
+    @UseGuards(OptionalJwtAuthGuard)
     @HttpCode(HttpStatus.CREATED)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: 'Registrar un nuevo usuario (solo admin)',
+        summary: 'Registrar un nuevo usuario',
         description:
-            'Crea un nuevo usuario en el sistema. Solo accesible por usuarios con rol admin. ' +
+            'Crea un nuevo usuario en el sistema. ' +
+            'Sin token: registro público, siempre crea con rol "member". ' +
+            'Con token de admin: puede crear cualquier rol (incluido admin). ' +
             'La contraseña se hashea con bcrypt (10 salt rounds) antes de almacenarse. ' +
             'Si el email ya existe, retorna 409 Conflict. ' +
             'No genera tokens — el usuario creado debe hacer login por separado.',
@@ -68,11 +70,13 @@ export class AuthController {
     @ApiConflictResponse({
         description: 'El email ya está registrado en el sistema',
     })
-    @ApiUnauthorizedResponse({
-        description: 'No autenticado o no tiene rol admin',
-    })
-    register(@Body() dto: RegisterRequestDto) {
-        return this.authService.register(dto.email, dto.password, dto.role);
+    register(
+        @Body() dto: RegisterRequestDto,
+        @CurrentUser() user?: JwtPayload,
+    ) {
+        const isAdmin = user?.role === Role.ADMIN;
+        const role = isAdmin && dto.role ? dto.role : Role.MEMBER;
+        return this.authService.register(dto.email, dto.password, role);
     }
 
     @Post('login')

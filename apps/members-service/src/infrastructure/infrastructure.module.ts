@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { RedisEventPublisher } from './messaging/redis-event-publisher';
 import { RedisCacheService } from './cache/redis-cache.service';
+import { AuthHttpService } from './integrations/auth-http.service';
 import { DeviceEntity } from './persistence/entities/device.entity';
 import { MemberEntity } from './persistence/entities/member.entity';
 import { MembershipPlanEntity } from './persistence/entities/membership-plan.entity';
@@ -30,6 +31,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         SubscriptionRepository,
         RedisCacheService,
         RedisEventPublisher,
+        AuthHttpService,
 
         { provide: 'MemberRepositoryPort', useExisting: MemberRepository },
         { provide: 'PlanRepositoryPort', useExisting: PlanRepository },
@@ -39,6 +41,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         },
         { provide: 'CachePort', useExisting: RedisCacheService },
         { provide: 'EventPublisherPort', useExisting: RedisEventPublisher },
+        { provide: 'AuthServicePort', useExisting: AuthHttpService },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -46,6 +49,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         'SubscriptionRepositoryPort',
         'CachePort',
         'EventPublisherPort',
+        'AuthServicePort',
         BullModule,
     ],
 })

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
-import { type CreateMemberDto } from '../../../api/dtos/create-member.dto';
+import { Repository } from 'typeorm';
 import {
+    type CreateMemberData,
     type FindAllMembersOptions,
     type MemberModel,
+    type MemberWithStatus,
     type MemberRepositoryPort,
     type PaginatedResult,
 } from '../../../application/ports/member-repository.port';
@@ -21,6 +22,7 @@ export class MemberRepository implements MemberRepositoryPort {
         return {
             id: entity.id,
             userId: entity.userId,
+            createdBy: entity.createdBy,
             name: entity.name,
             cedula: entity.cedula,
             phone: entity.phone,
@@ -31,7 +33,7 @@ export class MemberRepository implements MemberRepositoryPort {
         };
     }
 
-    async create(payload: CreateMemberDto): Promise<MemberModel> {
+    async create(payload: CreateMemberData): Promise<MemberModel> {
         const entity = this.repository.create(payload);
         const saved = await this.repository.save(entity);
         return this.toModel(saved);
@@ -57,21 +59,31 @@ export class MemberRepository implements MemberRepositoryPort {
 
     async findAll(
         options: FindAllMembersOptions,
-    ): Promise<PaginatedResult<MemberModel>> {
+    ): Promise<PaginatedResult<MemberWithStatus>> {
         const page = options.page || 1;
         const limit = options.limit || 20;
         const skip = (page - 1) * limit;
 
-        const queryBuilder = this.repository.createQueryBuilder('member');
+        const queryBuilder = this.repository
+            .createQueryBuilder('member')
+            .leftJoinAndSelect(
+                'member.subscriptions',
+                'sub',
+                'sub.status = :active',
+                { active: 'active' },
+            );
 
         if (options.search) {
-            queryBuilder.andWhere('member.name ILIKE :search OR member.cedula ILIKE :search', { search: `%${options.search}%` });
+            queryBuilder.andWhere(
+                'member.name ILIKE :search OR member.cedula ILIKE :search',
+                { search: `%${options.search}%` },
+            );
         }
 
-        if (options.status) {
-            queryBuilder
-                .leftJoin('member.subscriptions', 'sub')
-                .andWhere('sub.status = :status', { status: options.status });
+        if (options.status === 'active') {
+            queryBuilder.andWhere('sub.id IS NOT NULL');
+        } else if (options.status === 'expired') {
+            queryBuilder.andWhere('sub.id IS NULL');
         }
 
         const [entities, total] = await queryBuilder
@@ -81,10 +93,35 @@ export class MemberRepository implements MemberRepositoryPort {
             .getManyAndCount();
 
         return {
-            data: entities.map((e) => this.toModel(e)),
+            data: entities.map((e) => this.toModelWithStatus(e)),
             total,
             page,
             limit,
+        };
+    }
+
+    private toModelWithStatus(entity: MemberEntity): MemberWithStatus {
+        const activeSub = entity.subscriptions?.find(
+            (s) => s.status === 'active' && new Date(s.expiresAt) > new Date(),
+        );
+
+        let subscriptionStatus: 'active' | 'expired' | 'none' = 'none';
+        let daysLeft = 0;
+
+        if (activeSub) {
+            subscriptionStatus = 'active';
+            daysLeft = Math.ceil(
+                (new Date(activeSub.expiresAt).getTime() - Date.now()) /
+                    (1000 * 60 * 60 * 24),
+            );
+        } else if (entity.subscriptions?.length > 0) {
+            subscriptionStatus = 'expired';
+        }
+
+        return {
+            ...this.toModel(entity),
+            subscriptionStatus,
+            daysLeft,
         };
     }
 

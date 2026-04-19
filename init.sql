@@ -51,6 +51,7 @@ CREATE TABLE members.membership_plans (
 CREATE TABLE members.members (
     id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id                 UUID         NOT NULL UNIQUE,
+    created_by              UUID         NOT NULL,
     name                    VARCHAR(255) NOT NULL,
     cedula                  VARCHAR(20)  NOT NULL UNIQUE,
     phone                   VARCHAR(20),
