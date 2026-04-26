@@ -133,6 +133,7 @@ ON CONFLICT (email) DO NOTHING;
 -- Perfil seed de miembro con huella utilizable por access-service
 INSERT INTO members.members (
     user_id,
+    created_by,
     name,
     cedula,
     phone,
@@ -140,6 +141,7 @@ INSERT INTO members.members (
     fingerprint_id
 )
 SELECT
+    u.id,
     u.id,
     'Miembro Seed',
     'V-10000001',

@@ -57,6 +57,41 @@ services:
         networks:
             - backend
 
+    redis-commander:
+        image: ghcr.io/joeferner/redis-commander:latest
+        restart: unless-stopped
+        environment:
+            REDIS_HOSTS: 'local:redis:6379'
+            URL_PREFIX: /redis
+            HTTP_USER: ${REDIS_COMMANDER_USER:-admin}
+            HTTP_PASSWORD: ${REDIS_COMMANDER_PASSWORD:-admin}
+        depends_on:
+            redis:
+                condition: service_healthy
+        networks:
+            - backend
+
+    pgweb:
+        image: sosedoff/pgweb:latest
+        restart: unless-stopped
+        command:
+            - --bind=0.0.0.0
+            - --listen=8081
+            - --prefix=pg
+            - --auth-user=${PGWEB_USER:-admin}
+            - --auth-pass=${PGWEB_PASSWORD:-admin}
+            - --host=postgres
+            - --port=5432
+            - --user=${POSTGRES_USER:-taurus}
+            - --pass=${POSTGRES_PASSWORD:-taurus}
+            - --db=${POSTGRES_DB:-taurus}
+            - --sslmode=disable
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - backend
+
     mosquitto:
         image: eclipse-mosquitto:2
         restart: unless-stopped
@@ -147,6 +182,8 @@ services:
             - auth-service
             - members-service
             - access-service
+            - redis-commander
+            - pgweb
         ports:
             - '${NGINX_PORT:-8080}:80'
         volumes:

@@ -45,6 +45,11 @@ export interface MemberRepositoryPort {
     findById(id: string): Promise<MemberModel | null>;
     findByCedula(cedula: string): Promise<MemberModel | null>;
     findByFingerprintId(fingerprintId: number): Promise<MemberModel | null>;
+    findUsedFingerprintIds(): Promise<number[]>;
+    setFingerprintId(
+        memberId: string,
+        fingerprintId: number | null,
+    ): Promise<MemberModel | null>;
     findAll(
         options: FindAllMembersOptions,
     ): Promise<PaginatedResult<MemberWithStatus>>;
