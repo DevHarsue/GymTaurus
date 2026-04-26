@@ -31,9 +31,11 @@ import {
 } from '@libs/common';
 import { MembersService } from '../../application/services/members.service';
 import { SubscriptionsService } from '../../application/services/subscriptions.service';
+import { EnrollmentService } from '../../application/services/enrollment.service';
 import { CreateMemberDto } from '../dtos/create-member.dto';
 import { UpdateMemberDto } from '../dtos/update-member.dto';
 import { RenewSubscriptionDto } from '../dtos/renew-subscription.dto';
+import { StartEnrollmentDto } from '../dtos/start-enrollment.dto';
 
 interface MemberResponse {
     id: string;
@@ -52,6 +54,7 @@ export class MembersController {
     constructor(
         private readonly membersService: MembersService,
         private readonly subscriptionsService: SubscriptionsService,
+        private readonly enrollmentService: EnrollmentService,
     ) {}
 
     @Get('health')
@@ -247,6 +250,85 @@ export class MembersController {
     @ApiResponse({ status: 200, description: 'Miembro eliminado exitosamente' })
     async remove(@Param('id') id: string) {
         return this.membersService.deleteMember(id);
+    }
+
+    @Post(':id/enroll/start')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Iniciar enrolamiento de huella para un miembro (publica MQTT al ESP32)',
+    })
+    @ApiParam({ name: 'id', description: 'UUID del miembro' })
+    async startEnrollment(
+        @Param('id') id: string,
+        @Body() payload: StartEnrollmentDto,
+    ) {
+        const session = await this.enrollmentService.startEnrollment(
+            id,
+            payload.deviceId,
+        );
+        return {
+            memberId: session.memberId,
+            fingerprintId: session.fingerprintId,
+            deviceId: session.deviceId,
+            step: session.step,
+            status: session.status,
+            message: session.message,
+        };
+    }
+
+    @Get(':id/enroll/status')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Consultar el estado actual del enrolamiento (poll)',
+    })
+    @ApiParam({ name: 'id', description: 'UUID del miembro' })
+    getEnrollmentStatus(@Param('id') id: string) {
+        const session = this.enrollmentService.getSession(id);
+        if (!session) {
+            return { status: 'idle', step: 'idle' };
+        }
+        return {
+            memberId: session.memberId,
+            fingerprintId: session.fingerprintId,
+            deviceId: session.deviceId,
+            step: session.step,
+            status: session.status,
+            message: session.message,
+            updatedAt: new Date(session.updatedAt).toISOString(),
+        };
+    }
+
+    @Delete(':id/enroll/cancel')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Cancelar un enrolamiento en curso' })
+    @ApiParam({ name: 'id', description: 'UUID del miembro' })
+    cancelEnrollment(@Param('id') id: string) {
+        this.enrollmentService.cancelSession(id);
+        return { ok: true };
+    }
+
+    @Delete(':id/fingerprint')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary:
+            'Eliminar la huella registrada del miembro (limpia DB y manda borrar al sensor)',
+    })
+    @ApiParam({ name: 'id', description: 'UUID del miembro' })
+    async deleteFingerprint(
+        @Param('id') id: string,
+        @Body() payload: StartEnrollmentDto,
+    ) {
+        await this.enrollmentService.deleteFingerprint(id, payload.deviceId);
+        return { ok: true };
     }
 
     @Post(':id/renew')

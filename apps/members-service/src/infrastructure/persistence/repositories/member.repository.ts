@@ -57,6 +57,34 @@ export class MemberRepository implements MemberRepositoryPort {
         return this.toModel(entity);
     }
 
+    async findUsedFingerprintIds(): Promise<number[]> {
+        const rows = await this.repository
+            .createQueryBuilder('member')
+            .select('member.fingerprintId', 'fingerprintId')
+            .where('member.fingerprintId IS NOT NULL')
+            .getRawMany<{ fingerprintId: number | string }>();
+        return rows
+            .map((row) => Number(row.fingerprintId))
+            .filter((value) => Number.isInteger(value));
+    }
+
+    async setFingerprintId(
+        memberId: string,
+        fingerprintId: number | null,
+    ): Promise<MemberModel | null> {
+        if (fingerprintId === null) {
+            await this.repository
+                .createQueryBuilder()
+                .update(MemberEntity)
+                .set({ fingerprintId: () => 'NULL' })
+                .where('id = :id', { id: memberId })
+                .execute();
+        } else {
+            await this.repository.update(memberId, { fingerprintId });
+        }
+        return this.findById(memberId);
+    }
+
     async findAll(
         options: FindAllMembersOptions,
     ): Promise<PaginatedResult<MemberWithStatus>> {

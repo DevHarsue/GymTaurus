@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bull';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { RedisEventPublisher } from './messaging/redis-event-publisher';
+import { EnrollmentMqttGateway } from './messaging/enrollment-mqtt.gateway';
 import { RedisCacheService } from './cache/redis-cache.service';
 import { AuthHttpService } from './integrations/auth-http.service';
 import { DeviceEntity } from './persistence/entities/device.entity';
@@ -32,6 +33,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         RedisCacheService,
         RedisEventPublisher,
         AuthHttpService,
+        EnrollmentMqttGateway,
 
         { provide: 'MemberRepositoryPort', useExisting: MemberRepository },
         { provide: 'PlanRepositoryPort', useExisting: PlanRepository },
@@ -42,6 +44,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         { provide: 'CachePort', useExisting: RedisCacheService },
         { provide: 'EventPublisherPort', useExisting: RedisEventPublisher },
         { provide: 'AuthServicePort', useExisting: AuthHttpService },
+        { provide: 'EnrollmentMqttPort', useExisting: EnrollmentMqttGateway },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -50,6 +53,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         'CachePort',
         'EventPublisherPort',
         'AuthServicePort',
+        'EnrollmentMqttPort',
         BullModule,
     ],
 })

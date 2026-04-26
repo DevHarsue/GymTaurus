@@ -103,6 +103,17 @@ export class AccessService {
         const memberId = memberStatus?.id ?? AccessService.UNKNOWN_MEMBER_ID;
         const daysLeft = memberStatus?.daysLeft ?? 0;
 
+        const source = input.synced ? 'live' : 'offline-sync';
+        if (!memberStatus) {
+            this.logger.warn(
+                `[ACCESS:${source}] fingerprint_id=${input.fingerprintId} -> not_found (no member registrado para esta huella)`,
+            );
+        } else {
+            this.logger.log(
+                `[ACCESS:${source}] fingerprint_id=${input.fingerprintId} -> ${granted ? 'GRANTED' : 'DENIED'} member="${memberName}" id=${memberId} reason=${reason} days_left=${daysLeft}`,
+            );
+        }
+
         const accessLog = await this.accessLogRepository.create({
             memberId,
             fingerprintId: input.fingerprintId,

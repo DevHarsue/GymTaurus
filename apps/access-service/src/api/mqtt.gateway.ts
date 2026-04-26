@@ -79,8 +79,17 @@ export class MqttGateway implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
+        this.logger.log(
+            `[REQUEST] gym/access/request <- device=${parsed.device_id} fingerprint_id=${parsed.fingerprint_id} timestamp=${parsed.timestamp}`,
+        );
+
         const result =
             await this.accessService.processMqttAccessRequest(parsed);
+
+        const decision = result.granted ? 'GRANTED' : 'DENIED';
+        this.logger.log(
+            `[RESPONSE] gym/access/response -> ${decision} fingerprint_id=${result.fingerprint_id} member="${result.name}" days_left=${result.days_left} reason=${result.reason}`,
+        );
         this.client?.publish('gym/access/response', JSON.stringify(result));
     }
 
@@ -93,6 +102,9 @@ export class MqttGateway implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
+        this.logger.debug(
+            `[HEARTBEAT] device=${parsed.device_id} uptime=${parsed.uptime}s`,
+        );
         await this.devicesService.registerHeartbeat(parsed);
     }
 
