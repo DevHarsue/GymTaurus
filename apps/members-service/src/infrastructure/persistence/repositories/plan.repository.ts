@@ -36,7 +36,10 @@ export class PlanRepository implements PlanRepositoryPort {
     }
 
     async findAll(): Promise<PlanModel[]> {
-        const entities = await this.repository.find({ order: { referencePrice: 'ASC' } });
+        const entities = await this.repository.find({
+            where: { isActive: true },
+            order: { referencePrice: 'ASC' },
+        });
         return entities.map(this.toModel);
     }
 

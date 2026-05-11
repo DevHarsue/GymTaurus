@@ -1,5 +1,5 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomBytes } from 'crypto';
+import { generateCompliantPassword } from '@libs/common';
 import { CreateMemberDto } from '../../api/dtos/create-member.dto';
 import { UpdateMemberDto } from '../../api/dtos/update-member.dto';
 import {
@@ -35,7 +35,7 @@ export class MembersService {
             throw new ConflictException(`Member with cedula ${payload.cedula} already exists`);
         }
 
-        const generatedPassword = payload.password ? undefined : randomBytes(6).toString('base64url');
+        const generatedPassword = payload.password ? undefined : generateCompliantPassword(12);
         const password = payload.password ?? generatedPassword!;
 
         const registeredUser = await this.authService.register(payload.email, password);

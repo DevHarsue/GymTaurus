@@ -1,35 +1,34 @@
-import {
-    IsEmail,
-    IsInt,
-    IsOptional,
-    IsString,
-    MinLength,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+    IsTaurusCedula,
+    IsTaurusEmail,
+    IsTaurusPassword,
+    IsTaurusPhone,
+} from '@libs/common';
 
 export class CreateMemberDto {
     @ApiProperty({ example: 'Juan Pérez' })
     @IsString()
-    @MinLength(2)
+    @MinLength(2, { message: 'El nombre debe tener al menos 2 caracteres' })
     name!: string;
 
-    @ApiProperty({ example: 'V-12345678' })
-    @IsString()
+    @ApiProperty({ example: '12345678' })
+    @IsTaurusCedula()
     cedula!: string;
 
     @ApiProperty({ example: 'juan@correo.com' })
-    @IsEmail()
+    @IsTaurusEmail()
     email!: string;
 
-    @ApiPropertyOptional({ example: 'SecurePass123', minLength: 8 })
+    @ApiPropertyOptional({ example: 'SecurePa$$1234', minLength: 8 })
     @IsOptional()
-    @IsString()
-    @MinLength(8)
+    @IsTaurusPassword()
     password?: string;
 
-    @ApiPropertyOptional({ example: '0412-1234567' })
+    @ApiPropertyOptional({ example: '584141771490' })
     @IsOptional()
-    @IsString()
+    @IsTaurusPhone()
     phone?: string;
 
     @ApiPropertyOptional({ example: 1 })
