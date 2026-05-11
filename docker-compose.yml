@@ -85,7 +85,7 @@ services:
             - --user=${POSTGRES_USER:-taurus}
             - --pass=${POSTGRES_PASSWORD:-taurus}
             - --db=${POSTGRES_DB:-taurus}
-            - --sslmode=disable
+            - --ssl=disable
         depends_on:
             postgres:
                 condition: service_healthy
