@@ -4,6 +4,7 @@ import { MembersService } from './services/members.service';
 import { PlansService } from './services/plans.service';
 import { SubscriptionsService } from './services/subscriptions.service';
 import { EnrollmentService } from './services/enrollment.service';
+import { StatisticsService } from './services/statistics.service';
 import { MembersProcessor } from '../infrastructure/jobs/members.processor';
 
 @Module({
@@ -13,6 +14,7 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         PlansService,
         SubscriptionsService,
         EnrollmentService,
+        StatisticsService,
         MembersProcessor,
     ],
     exports: [
@@ -20,6 +22,7 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         PlansService,
         SubscriptionsService,
         EnrollmentService,
+        StatisticsService,
     ],
 })
 export class ApplicationModule {}
