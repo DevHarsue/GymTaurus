@@ -1,3 +1,4 @@
+export * from './audit';
 export * from './decorators/current-user.decorator';
 export * from './decorators/roles.decorator';
 export * from './dtos/base.dto';

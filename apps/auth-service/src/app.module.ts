@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtStrategy } from '@libs/common';
+import { AuditContextModule, JwtStrategy } from '@libs/common';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { RefreshTokenEntity } from './infrastructure/entities/refresh-token.entity';
@@ -12,6 +12,7 @@ import { UserEntity } from './infrastructure/entities/user.entity';
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         PassportModule.register({ defaultStrategy: 'jwt' }),
+        AuditContextModule,
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({

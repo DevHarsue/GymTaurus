@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { JwtStrategy } from '@libs/common';
+import { AuditContextModule, JwtStrategy } from '@libs/common';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { DeviceEntity } from './infrastructure/persistence/entities/device.entity';
@@ -18,6 +18,7 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
         ConfigModule.forRoot({ isGlobal: true }),
         PassportModule.register({ defaultStrategy: 'jwt' }),
         ScheduleModule.forRoot(),
+        AuditContextModule,
         TypeOrmModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
