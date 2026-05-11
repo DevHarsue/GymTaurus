@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { AccessService } from './services/access.service';
+import { AccessStatisticsService } from './services/access-statistics.service';
 import { DevicesService } from './services/devices.service';
 
 @Module({
     imports: [InfrastructureModule],
-    providers: [AccessService, DevicesService],
-    exports: [AccessService, DevicesService],
+    providers: [AccessService, AccessStatisticsService, DevicesService],
+    exports: [AccessService, AccessStatisticsService, DevicesService],
 })
 export class ApplicationModule {}

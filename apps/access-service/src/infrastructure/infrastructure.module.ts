@@ -9,6 +9,7 @@ import { AccessProcessor } from './jobs/access.processor';
 import { DeviceHeartbeatMonitorService } from './jobs/device-heartbeat-monitor.service';
 import { RedisEventPublisher } from './messaging/redis-event-publisher';
 import { AccessLogRepository } from './persistence/repositories/access-log.repository';
+import { AccessStatisticsRepository } from './persistence/repositories/access-statistics.repository';
 import {
     AccessLog,
     AccessLogSchema,
@@ -28,6 +29,7 @@ import {
     ],
     providers: [
         AccessLogRepository,
+        AccessStatisticsRepository,
         RedisCacheService,
         RedisEventPublisher,
         MembersHttpStatusService,
@@ -41,12 +43,14 @@ import {
         { provide: 'CachePort', useExisting: RedisCacheService },
         { provide: 'EventPublisherPort', useExisting: RedisEventPublisher },
         { provide: 'MemberStatusPort', useExisting: MembersHttpStatusService },
+        { provide: 'AccessStatisticsRepositoryPort', useExisting: AccessStatisticsRepository },
     ],
     exports: [
         'AccessLogRepositoryPort',
         'CachePort',
         'EventPublisherPort',
         'MemberStatusPort',
+        'AccessStatisticsRepositoryPort',
     ],
 })
 export class InfrastructureModule {}
