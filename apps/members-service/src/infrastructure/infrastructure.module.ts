@@ -14,6 +14,7 @@ import { SubscriptionEntity } from './persistence/entities/subscription.entity';
 import { MemberRepository } from './persistence/repositories/member.repository';
 import { PlanRepository } from './persistence/repositories/plan.repository';
 import { SubscriptionRepository } from './persistence/repositories/subscription.repository';
+import { StatisticsRepository } from './persistence/repositories/statistics.repository';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         MemberRepository,
         PlanRepository,
         SubscriptionRepository,
+        StatisticsRepository,
         RedisCacheService,
         RedisEventPublisher,
         AuthHttpService,
@@ -45,6 +47,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         { provide: 'EventPublisherPort', useExisting: RedisEventPublisher },
         { provide: 'AuthServicePort', useExisting: AuthHttpService },
         { provide: 'EnrollmentMqttPort', useExisting: EnrollmentMqttGateway },
+        { provide: 'StatisticsRepositoryPort', useExisting: StatisticsRepository },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -54,6 +57,7 @@ import { SubscriptionRepository } from './persistence/repositories/subscription.
         'EventPublisherPort',
         'AuthServicePort',
         'EnrollmentMqttPort',
+        'StatisticsRepositoryPort',
         BullModule,
     ],
 })
