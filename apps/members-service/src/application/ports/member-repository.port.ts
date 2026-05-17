@@ -43,6 +43,7 @@ export interface PaginatedResult<T> {
 export interface MemberRepositoryPort {
     create(payload: CreateMemberData): Promise<MemberModel>;
     findById(id: string): Promise<MemberModel | null>;
+    findByUserId(userId: string): Promise<MemberModel | null>;
     findByCedula(cedula: string): Promise<MemberModel | null>;
     findByFingerprintId(fingerprintId: number): Promise<MemberModel | null>;
     findUsedFingerprintIds(): Promise<number[]>;

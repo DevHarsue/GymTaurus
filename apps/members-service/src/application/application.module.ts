@@ -23,6 +23,7 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         SubscriptionsService,
         EnrollmentService,
         StatisticsService,
+        InfrastructureModule,
     ],
 })
 export class ApplicationModule {}

@@ -45,6 +45,12 @@ export class MemberRepository implements MemberRepositoryPort {
         return this.toModel(entity);
     }
 
+    async findByUserId(userId: string): Promise<MemberModel | null> {
+        const entity = await this.repository.findOne({ where: { userId } });
+        if (!entity) return null;
+        return this.toModel(entity);
+    }
+
     async findByCedula(cedula: string): Promise<MemberModel | null> {
         const entity = await this.repository.findOne({ where: { cedula } });
         if (!entity) return null;

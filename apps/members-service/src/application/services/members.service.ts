@@ -68,6 +68,10 @@ export class MembersService {
         return member;
     }
 
+    async getMemberByUserId(userId: string): Promise<MemberModel | null> {
+        return this.memberRepository.findByUserId(userId);
+    }
+
     async listMembers(options: FindAllMembersOptions): Promise<PaginatedResult<MemberWithStatus>> {
         return this.memberRepository.findAll(options);
     }

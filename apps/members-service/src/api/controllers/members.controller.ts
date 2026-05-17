@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    Inject,
     NotFoundException,
     Param,
     ParseIntPipe,
@@ -32,6 +33,7 @@ import {
 import { MembersService } from '../../application/services/members.service';
 import { SubscriptionsService } from '../../application/services/subscriptions.service';
 import { EnrollmentService } from '../../application/services/enrollment.service';
+import type { PlanRepositoryPort } from '../../application/ports/plan-repository.port';
 import { CreateMemberDto } from '../dtos/create-member.dto';
 import { UpdateMemberDto } from '../dtos/update-member.dto';
 import { RenewSubscriptionDto } from '../dtos/renew-subscription.dto';
@@ -46,6 +48,8 @@ interface MemberResponse {
     subscriptionStatus: string;
     daysLeft: number;
     fingerprintId?: number;
+    currentPlanName?: string;
+    currentExpiresAt?: string;
 }
 
 @ApiTags('Miembros')
@@ -55,6 +59,8 @@ export class MembersController {
         private readonly membersService: MembersService,
         private readonly subscriptionsService: SubscriptionsService,
         private readonly enrollmentService: EnrollmentService,
+        @Inject('PlanRepositoryPort')
+        private readonly planRepository: PlanRepositoryPort,
     ) {}
 
     @Get('health')
@@ -148,6 +154,8 @@ export class MembersController {
         const now = new Date();
         let daysLeft = 0;
         let subscriptionStatus: 'active' | 'expired' | 'none' = 'none';
+        let currentPlanName: string | undefined;
+        let currentExpiresAt: string | undefined;
 
         if (allSubs && new Date(allSubs.expiresAt) > now) {
             daysLeft = Math.ceil(
@@ -159,6 +167,12 @@ export class MembersController {
             subscriptionStatus = 'expired';
         }
 
+        if (allSubs) {
+            currentExpiresAt = new Date(allSubs.expiresAt).toISOString();
+            const plan = await this.planRepository.findById(allSubs.planId);
+            if (plan) currentPlanName = plan.name;
+        }
+
         return {
             id: member.id,
             name: member.name,
@@ -168,6 +182,8 @@ export class MembersController {
             subscriptionStatus,
             daysLeft,
             fingerprintId: member.fingerprintId,
+            currentPlanName,
+            currentExpiresAt,
         };
     }
 
@@ -215,6 +231,25 @@ export class MembersController {
             daysLeft: response.daysLeft,
             fingerprintId: response.fingerprintId,
         };
+    }
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Obtener el perfil del miembro autenticado (vía JWT)',
+    })
+    @ApiNotFoundResponse({
+        description: 'No existe un perfil de miembro para este usuario',
+    })
+    async findMe(@CurrentUser() user: JwtPayload) {
+        const member = await this.membersService.getMemberByUserId(user.sub);
+        if (!member) {
+            throw new NotFoundException(
+                'No existe un perfil de miembro asociado a este usuario',
+            );
+        }
+        return this.buildMemberResponse(member.id);
     }
 
     @Get(':id')
