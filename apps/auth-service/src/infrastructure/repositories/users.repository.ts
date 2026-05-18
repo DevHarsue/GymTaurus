@@ -16,16 +16,28 @@ export class UsersRepository implements UserRepositoryPort {
         return this.repository.findOne({ where: { email } });
     }
 
+    async findByGoogleId(googleId: string): Promise<UserEntity | null> {
+        return this.repository.findOne({ where: { googleId } });
+    }
+
     async findById(id: string): Promise<UserEntity | null> {
         return this.repository.findOne({ where: { id } });
     }
 
     async create(data: {
         email: string;
+        googleId?: string;
         passwordHash: string;
         role: Role;
     }): Promise<UserEntity> {
         const entity = this.repository.create(data);
         return this.repository.save(entity);
+    }
+
+    async update(id: string, data: Partial<UserEntity>): Promise<UserEntity> {
+        await this.repository.update(id, data);
+        const entity = await this.findById(id);
+        if (!entity) throw new Error('User not found after update');
+        return entity;
     }
 }

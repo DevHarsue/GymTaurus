@@ -17,6 +17,9 @@ export class UserEntity {
     @Column({ type: 'varchar', length: 255, unique: true })
     email!: string;
 
+    @Column({ type: 'varchar', name: 'google_id', length: 255, unique: true, nullable: true })
+    googleId?: string | null;
+
     @Column({ type: 'varchar', name: 'password_hash', length: 255 })
     passwordHash!: string;
 

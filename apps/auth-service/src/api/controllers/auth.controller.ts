@@ -33,6 +33,7 @@ import { RefreshResponseDto } from '../dtos/refresh-response.dto';
 import { RefreshTokenRequestDto } from '../dtos/refresh-token-request.dto';
 import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { RegisterResponseDto } from '../dtos/register-response.dto';
+import { GoogleLoginDto } from '../dtos/google-login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -99,6 +100,23 @@ export class AuthController {
     })
     login(@Body() dto: LoginRequestDto) {
         return this.authService.login(dto.email, dto.password);
+    }
+
+    @Post('google')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Iniciar sesión con Google',
+        description: 'Autentica a un usuario usando un idToken provisto por Google Sign-In. Si el usuario no existe, lo crea automáticamente.',
+    })
+    @ApiOkResponse({
+        type: LoginResponseDto,
+        description: 'Login exitoso con Google, retorna tokens y datos del usuario',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Token de Google inválido',
+    })
+    loginWithGoogle(@Body() dto: GoogleLoginDto) {
+        return this.authService.loginWithGoogle(dto.idToken, dto.accessToken);
     }
 
     @Post('refresh')
