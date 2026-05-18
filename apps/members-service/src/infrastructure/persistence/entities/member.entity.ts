@@ -22,8 +22,8 @@ export class MemberEntity {
     @Column({ type: 'varchar', length: 255 })
     name!: string;
 
-    @Column({ type: 'varchar', length: 20, unique: true })
-    cedula!: string;
+    @Column({ type: 'varchar', length: 20, unique: true, nullable: true })
+    cedula?: string | null;
 
     @Column({ type: 'varchar', length: 20, nullable: true })
     phone?: string;

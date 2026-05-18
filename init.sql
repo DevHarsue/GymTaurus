@@ -54,7 +54,7 @@ CREATE TABLE members.members (
     user_id                 UUID         NOT NULL UNIQUE,
     created_by              UUID         NOT NULL,
     name                    VARCHAR(255) NOT NULL,
-    cedula                  VARCHAR(20)  NOT NULL UNIQUE,
+    cedula                  VARCHAR(20)  UNIQUE,
     phone                   VARCHAR(20),
     email                   VARCHAR(255),
     fingerprint_id          INT          UNIQUE,

@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
@@ -25,6 +27,8 @@ export class AuthService {
         private readonly refreshTokenRepository: RefreshTokenRepositoryPort,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
+        @InjectDataSource()
+        private readonly dataSource: DataSource,
     ) {
         const clientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
         this.googleClient = new OAuth2Client(clientId);
@@ -91,6 +95,7 @@ export class AuthService {
     }> {
         let email: string;
         let googleId: string;
+        let displayName: string;
 
         try {
             if (idToken) {
@@ -105,6 +110,7 @@ export class AuthService {
                 }
                 email = payload.email;
                 googleId = payload.sub;
+                displayName = payload.name || email.split('@')[0]!;
             } else if (accessToken) {
                 // Flujo web (implícito): usar el accessToken para obtener info del usuario
                 const res = await fetch(
@@ -120,11 +126,13 @@ export class AuthService {
                 }
                 email = userInfo.email;
                 googleId = userInfo.sub;
+                displayName = userInfo.name || email.split('@')[0]!;
             } else {
                 throw new BadRequestException('Either idToken or accessToken is required');
             }
 
             let user = await this.userRepository.findByEmail(email);
+            let isNewUser = false;
 
             if (user) {
                 if (!user.googleId) {
@@ -137,6 +145,18 @@ export class AuthService {
                     passwordHash: 'GOOGLE_OAUTH',
                     role: 'member' as Role,
                 });
+                isNewUser = true;
+            }
+
+            // Para usuarios nuevos auto-registrados con Google, crear también el perfil en members.members
+            // (cedula queda NULL hasta que el usuario complete su perfil)
+            if (isNewUser) {
+                await this.dataSource.query(
+                    `INSERT INTO members.members (user_id, created_by, name, email)
+                     VALUES ($1, $1, $2, $3)
+                     ON CONFLICT (user_id) DO NOTHING`,
+                    [user.id, displayName, email],
+                );
             }
 
             await this.refreshTokenRepository.deleteExpiredByUserId(user.id);
@@ -155,6 +175,7 @@ export class AuthService {
             };
         } catch (error) {
             if (error instanceof BadRequestException) throw error;
+            console.error('[loginWithGoogle] verification failed:', error);
             throw new UnauthorizedException('Failed to authenticate with Google');
         }
     }
