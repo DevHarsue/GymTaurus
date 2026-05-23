@@ -2,6 +2,7 @@ import { ConflictException, Inject, Injectable, NotFoundException } from '@nestj
 import { generateCompliantPassword } from '@libs/common';
 import { CreateMemberDto } from '../../api/dtos/create-member.dto';
 import { UpdateMemberDto } from '../../api/dtos/update-member.dto';
+import { CompleteProfileDto } from '../../api/dtos/complete-profile.dto';
 import {
     FindAllMembersOptions,
     PaginatedResult,
@@ -74,6 +75,31 @@ export class MembersService {
 
     async listMembers(options: FindAllMembersOptions): Promise<PaginatedResult<MemberWithStatus>> {
         return this.memberRepository.findAll(options);
+    }
+
+    async completeMyProfile(userId: string, payload: CompleteProfileDto): Promise<MemberModel> {
+        const member = await this.memberRepository.findByUserId(userId);
+        if (!member) {
+            throw new NotFoundException('No existe un perfil de miembro asociado a este usuario');
+        }
+        if (member.cedula) {
+            throw new ConflictException('El perfil ya está completo');
+        }
+
+        const cedulaTaken = await this.memberRepository.findByCedula(payload.cedula);
+        if (cedulaTaken) {
+            throw new ConflictException(`La cédula ${payload.cedula} ya está registrada`);
+        }
+
+        const updated = await this.memberRepository.update(member.id, {
+            cedula: payload.cedula,
+            phone: payload.phone,
+        });
+        if (!updated) {
+            throw new NotFoundException(`Miembro con ID ${member.id} no encontrado`);
+        }
+        await this.cache.set(`member:${updated.id}`, JSON.stringify(updated), 300);
+        return updated;
     }
 
     async updateMember(id: string, payload: UpdateMemberDto): Promise<MemberModel> {

@@ -13,7 +13,7 @@ export interface MemberModel {
     userId: string;
     createdBy: string;
     name: string;
-    cedula: string;
+    cedula?: string | null;
     phone?: string;
     email?: string;
     fingerprintId?: number;
@@ -56,7 +56,7 @@ export interface MemberRepositoryPort {
     ): Promise<PaginatedResult<MemberWithStatus>>;
     update(
         id: string,
-        payload: Partial<Pick<MemberModel, 'name' | 'phone' | 'email'>>,
+        payload: Partial<Pick<MemberModel, 'name' | 'phone' | 'email' | 'cedula'>>,
     ): Promise<MemberModel | null>;
     delete(id: string): Promise<boolean>;
 }

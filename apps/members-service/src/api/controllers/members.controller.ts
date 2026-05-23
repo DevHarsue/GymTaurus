@@ -36,13 +36,14 @@ import { EnrollmentService } from '../../application/services/enrollment.service
 import type { PlanRepositoryPort } from '../../application/ports/plan-repository.port';
 import { CreateMemberDto } from '../dtos/create-member.dto';
 import { UpdateMemberDto } from '../dtos/update-member.dto';
+import { CompleteProfileDto } from '../dtos/complete-profile.dto';
 import { RenewSubscriptionDto } from '../dtos/renew-subscription.dto';
 import { StartEnrollmentDto } from '../dtos/start-enrollment.dto';
 
 interface MemberResponse {
     id: string;
     name: string;
-    cedula: string;
+    cedula?: string | null;
     phone?: string;
     email?: string;
     subscriptionStatus: string;
@@ -250,6 +251,26 @@ export class MembersController {
             );
         }
         return this.buildMemberResponse(member.id);
+    }
+
+    @Post('me/complete-profile')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Completar el perfil del miembro autenticado (cédula + teléfono)',
+        description:
+            'Usado por usuarios que se registraron vía OAuth (Google) y aún no tienen cédula. ' +
+            'Falla con 409 si el perfil ya está completo o si la cédula está duplicada.',
+    })
+    @ApiResponse({ status: 200, description: 'Perfil completado exitosamente' })
+    @ApiNotFoundResponse({ description: 'No existe perfil de miembro para este usuario' })
+    @ApiBadRequestResponse({ description: 'Cédula o teléfono inválidos' })
+    async completeMyProfile(
+        @Body() payload: CompleteProfileDto,
+        @CurrentUser() user: JwtPayload,
+    ) {
+        const updated = await this.membersService.completeMyProfile(user.sub, payload);
+        return this.buildMemberResponse(updated.id);
     }
 
     @Get(':id')
