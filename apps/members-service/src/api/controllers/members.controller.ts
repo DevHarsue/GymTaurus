@@ -253,6 +253,24 @@ export class MembersController {
         return this.buildMemberResponse(member.id);
     }
 
+    @Get('me/subscriptions')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Obtener historial de suscripciones del miembro autenticado',
+    })
+    @ApiResponse({ status: 200, description: 'Lista de suscripciones del miembro' })
+    @ApiNotFoundResponse({ description: 'No existe perfil de miembro para este usuario' })
+    async findMySubscriptions(@CurrentUser() user: JwtPayload) {
+        const member = await this.membersService.getMemberByUserId(user.sub);
+        if (!member) {
+            throw new NotFoundException(
+                'No existe un perfil de miembro asociado a este usuario',
+            );
+        }
+        return this.subscriptionsService.getSubscriptionsByMemberId(member.id);
+    }
+
     @Post('me/complete-profile')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

@@ -53,6 +53,12 @@ export class SubscriptionsService {
         return this.subscriptionRepository.findActiveByMemberId(memberId);
     }
 
+    async getSubscriptionsByMemberId(
+        memberId: string,
+    ): Promise<SubscriptionModel[]> {
+        return this.subscriptionRepository.findByMemberId(memberId);
+    }
+
     async renewSubscription(
         memberId: string,
         payload: RenewSubscriptionDto,
