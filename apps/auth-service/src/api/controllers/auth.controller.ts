@@ -5,6 +5,7 @@ import {
     HttpCode,
     HttpStatus,
     Post,
+    Put,
     UseGuards,
 } from '@nestjs/common';
 import {
@@ -34,6 +35,9 @@ import { RefreshTokenRequestDto } from '../dtos/refresh-token-request.dto';
 import { RegisterRequestDto } from '../dtos/register-request.dto';
 import { RegisterResponseDto } from '../dtos/register-response.dto';
 import { GoogleLoginDto } from '../dtos/google-login.dto';
+import { ForgotPasswordRequestDto } from '../dtos/forgot-password-request.dto';
+import { ResetPasswordRequestDto } from '../dtos/reset-password-request.dto';
+import { ChangePasswordRequestDto } from '../dtos/change-password-request.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -100,6 +104,61 @@ export class AuthController {
     })
     login(@Body() dto: LoginRequestDto) {
         return this.authService.login(dto.email, dto.password);
+    }
+
+    @Post('forgot-password')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Solicitar restablecimiento de contrasena',
+        description:
+            'Genera un token de restablecimiento de contrasena si el email existe. ' +
+            'El token se loguea en consola del servidor (no se envia email aun). ' +
+            'Siempre retorna el mismo mensaje para prevenir enumeracion de emails.',
+    })
+    @ApiOkResponse({ description: 'Solicitud procesada' })
+    forgotPassword(@Body() dto: ForgotPasswordRequestDto) {
+        return this.authService.forgotPassword(dto.email);
+    }
+
+    @Post('reset-password')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Restablecer contrasena con token',
+        description:
+            'Verifica el token de restablecimiento y cambia la contrasena. ' +
+            'El token es de un solo uso y expira en 1 hora.',
+    })
+    @ApiOkResponse({ description: 'Contrasena restablecida exitosamente' })
+    @ApiUnauthorizedResponse({
+        description: 'Token invalido o expirado',
+    })
+    resetPassword(@Body() dto: ResetPasswordRequestDto) {
+        return this.authService.resetPassword(dto.token, dto.newPassword);
+    }
+
+    @Put('change-password')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Cambiar contrasena del usuario autenticado',
+        description:
+            'Permite al usuario cambiar su contrasena proporcionando la contrasena actual y la nueva. ' +
+            'Requiere autenticacion JWT.',
+    })
+    @ApiOkResponse({ description: 'Contrasena actualizada exitosamente' })
+    @ApiUnauthorizedResponse({
+        description: 'Contrasena actual incorrecta o token invalido',
+    })
+    changePassword(
+        @Body() dto: ChangePasswordRequestDto,
+        @CurrentUser() user: JwtPayload,
+    ) {
+        return this.authService.changePassword(
+            user.sub,
+            dto.currentPassword,
+            dto.newPassword,
+        );
     }
 
     @Post('google')

@@ -6,6 +6,7 @@ import { AuditContextModule, JwtStrategy } from '@libs/common';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { RefreshTokenEntity } from './infrastructure/entities/refresh-token.entity';
+import { PasswordResetTokenEntity } from './infrastructure/entities/password-reset-token.entity';
 import { UserEntity } from './infrastructure/entities/user.entity';
 
 @Module({
@@ -26,7 +27,7 @@ import { UserEntity } from './infrastructure/entities/user.entity';
                 ),
                 database: configService.get<string>('AUTH_DB_NAME', 'taurus'),
                 schema: 'auth',
-                entities: [UserEntity, RefreshTokenEntity],
+                entities: [UserEntity, RefreshTokenEntity, PasswordResetTokenEntity],
                 synchronize: false,
             }),
         }),

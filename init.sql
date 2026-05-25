@@ -36,6 +36,17 @@ CREATE TABLE auth.refresh_tokens (
 CREATE INDEX idx_refresh_tokens_user    ON auth.refresh_tokens(user_id);
 CREATE INDEX idx_refresh_tokens_expires ON auth.refresh_tokens(expires_at);
 
+CREATE TABLE auth.password_reset_tokens (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id         UUID         NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    token           VARCHAR(500) NOT NULL UNIQUE,
+    expires_at      TIMESTAMP    NOT NULL,
+    created_at      TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_password_reset_tokens_user  ON auth.password_reset_tokens(user_id);
+CREATE INDEX idx_password_reset_tokens_token ON auth.password_reset_tokens(token);
+
 -- ============================================================
 -- SCHEMA: members (members-service — Chen)
 -- ============================================================
@@ -294,6 +305,11 @@ CREATE TRIGGER trg_audit_users
 DROP TRIGGER IF EXISTS trg_audit_refresh_tokens ON auth.refresh_tokens;
 CREATE TRIGGER trg_audit_refresh_tokens
     AFTER INSERT OR UPDATE OR DELETE ON auth.refresh_tokens
+    FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
+
+DROP TRIGGER IF EXISTS trg_audit_password_reset_tokens ON auth.password_reset_tokens;
+CREATE TRIGGER trg_audit_password_reset_tokens
+    AFTER INSERT OR UPDATE OR DELETE ON auth.password_reset_tokens
     FOR EACH ROW EXECUTE FUNCTION audit.log_changes();
 
 DROP TRIGGER IF EXISTS trg_audit_members            ON members.members;

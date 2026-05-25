@@ -15,6 +15,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { type Role } from '@libs/common';
 import { type UserRepositoryPort } from '../ports/user-repository.port';
 import { type RefreshTokenRepositoryPort } from '../ports/refresh-token-repository.port';
+import { type PasswordResetTokenRepositoryPort } from '../ports/password-reset-token-repository.port';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +26,8 @@ export class AuthService {
         private readonly userRepository: UserRepositoryPort,
         @Inject('RefreshTokenRepositoryPort')
         private readonly refreshTokenRepository: RefreshTokenRepositoryPort,
+        @Inject('PasswordResetTokenRepositoryPort')
+        private readonly passwordResetTokenRepository: PasswordResetTokenRepositoryPort,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
         @InjectDataSource()
@@ -224,6 +227,85 @@ export class AuthService {
 
     async logout(refreshToken: string): Promise<void> {
         await this.refreshTokenRepository.deleteByToken(refreshToken);
+    }
+
+    async forgotPassword(
+        email: string,
+    ): Promise<{ message: string }> {
+        const user = await this.userRepository.findByEmail(email);
+
+        if (user) {
+            await this.passwordResetTokenRepository.deleteByUserId(user.id);
+
+            const token = randomUUID();
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+            await this.passwordResetTokenRepository.create({
+                userId: user.id,
+                token,
+                expiresAt,
+            });
+
+            console.log(
+                `[PASSWORD RESET TOKEN] email=${email} token=${token}`,
+            );
+        }
+
+        return {
+            message:
+                'Si el email existe, recibiras instrucciones para restablecer tu contrasena',
+        };
+    }
+
+    async resetPassword(
+        token: string,
+        newPassword: string,
+    ): Promise<{ message: string }> {
+        const storedToken =
+            await this.passwordResetTokenRepository.findByToken(token);
+
+        if (!storedToken) {
+            throw new UnauthorizedException(
+                'Token de restablecimiento invalido o expirado',
+            );
+        }
+
+        if (storedToken.expiresAt < new Date()) {
+            await this.passwordResetTokenRepository.deleteByToken(token);
+            throw new UnauthorizedException(
+                'Token de restablecimiento invalido o expirado',
+            );
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await this.userRepository.update(storedToken.userId, { passwordHash });
+        await this.passwordResetTokenRepository.deleteByToken(token);
+
+        return { message: 'Contrasena restablecida exitosamente' };
+    }
+
+    async changePassword(
+        userId: string,
+        currentPassword: string,
+        newPassword: string,
+    ): Promise<{ message: string }> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new UnauthorizedException('Usuario no encontrado');
+        }
+
+        const isValid = await bcrypt.compare(
+            currentPassword,
+            user.passwordHash,
+        );
+        if (!isValid) {
+            throw new UnauthorizedException('Contrasena actual incorrecta');
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await this.userRepository.update(userId, { passwordHash });
+
+        return { message: 'Contrasena actualizada exitosamente' };
     }
 
     private generateAccessToken(
