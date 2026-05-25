@@ -79,10 +79,12 @@ export class AccessLogRepository implements AccessLogRepositoryPort {
         }));
     }
 
-    async listByMember(memberId: string): Promise<AccessLogModel[]> {
+    async listByMember(memberId: string, limit: number, offset: number): Promise<AccessLogModel[]> {
         const logs = await this.accessLogModel
-            .find({ memberId })
+            .find({ member_id: memberId })
             .sort({ timestamp: -1 })
+            .skip(offset)
+            .limit(limit)
             .lean()
             .exec();
 

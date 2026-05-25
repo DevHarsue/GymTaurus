@@ -15,6 +15,7 @@ import { MemberRepository } from './persistence/repositories/member.repository';
 import { PlanRepository } from './persistence/repositories/plan.repository';
 import { SubscriptionRepository } from './persistence/repositories/subscription.repository';
 import { StatisticsRepository } from './persistence/repositories/statistics.repository';
+import { DeviceRepository } from './persistence/repositories/device.repository';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { StatisticsRepository } from './persistence/repositories/statistics.repo
         PlanRepository,
         SubscriptionRepository,
         StatisticsRepository,
+        DeviceRepository,
         RedisCacheService,
         RedisEventPublisher,
         AuthHttpService,
@@ -48,6 +50,7 @@ import { StatisticsRepository } from './persistence/repositories/statistics.repo
         { provide: 'AuthServicePort', useExisting: AuthHttpService },
         { provide: 'EnrollmentMqttPort', useExisting: EnrollmentMqttGateway },
         { provide: 'StatisticsRepositoryPort', useExisting: StatisticsRepository },
+        { provide: 'DeviceRepositoryPort', useExisting: DeviceRepository },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -58,6 +61,7 @@ import { StatisticsRepository } from './persistence/repositories/statistics.repo
         'AuthServicePort',
         'EnrollmentMqttPort',
         'StatisticsRepositoryPort',
+        'DeviceRepositoryPort',
         BullModule,
     ],
 })

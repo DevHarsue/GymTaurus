@@ -34,7 +34,7 @@ export class AccessController {
     listLogs(@Query() query: AccessLogQueryDto) {
         const limit = query.limit ?? 50;
         const offset = query.offset ?? 0;
-        return this.accessService.listLogs(limit, offset);
+        return this.accessService.listLogs(limit, offset, query.memberId);
     }
 
     @Post('sync')

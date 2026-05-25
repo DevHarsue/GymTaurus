@@ -4,9 +4,10 @@ import { MembersController } from './controllers/members.controller';
 import { PlansController } from './controllers/plans.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
 import { StatisticsController } from './controllers/statistics.controller';
+import { DevicesController } from './controllers/devices.controller';
 
 @Module({
     imports: [ApplicationModule],
-    controllers: [MembersController, PlansController, SubscriptionsController, StatisticsController],
+    controllers: [MembersController, PlansController, SubscriptionsController, StatisticsController, DevicesController],
 })
 export class ApiModule {}

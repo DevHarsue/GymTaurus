@@ -24,5 +24,5 @@ export interface AccessLogModel {
 export interface AccessLogRepositoryPort {
     create(payload: CreateAccessLogInput): Promise<AccessLogModel>;
     listRecent(limit: number, offset: number): Promise<AccessLogModel[]>;
-    listByMember(memberId: string): Promise<AccessLogModel[]>;
+    listByMember(memberId: string, limit: number, offset: number): Promise<AccessLogModel[]>;
 }

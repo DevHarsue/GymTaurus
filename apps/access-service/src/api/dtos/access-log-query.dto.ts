@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class AccessLogQueryDto {
     @IsOptional()
@@ -14,4 +14,8 @@ export class AccessLogQueryDto {
     @IsInt()
     @Min(0)
     offset?: number;
+
+    @IsOptional()
+    @IsString()
+    memberId?: string;
 }

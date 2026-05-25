@@ -70,6 +70,7 @@ export class AccessService {
     async listLogs(
         limit: number,
         offset: number,
+        memberId?: string,
     ): Promise<
         Array<{
             member_name: string;
@@ -78,7 +79,9 @@ export class AccessService {
             timestamp: string;
         }>
     > {
-        const logs = await this.accessLogRepository.listRecent(limit, offset);
+        const logs = memberId
+            ? await this.accessLogRepository.listByMember(memberId, limit, offset)
+            : await this.accessLogRepository.listRecent(limit, offset);
         return logs.map((log) => ({
             member_name: log.memberName,
             granted: log.granted,
