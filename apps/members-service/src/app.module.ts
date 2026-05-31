@@ -7,6 +7,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuditContextModule, JwtStrategy } from '@libs/common';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
+import { AuditLogEntity } from './infrastructure/persistence/entities/audit-log.entity';
+import { AuthUserEntity } from './infrastructure/persistence/entities/auth-user.entity';
 import { DeviceEntity } from './infrastructure/persistence/entities/device.entity';
 import { MemberEntity } from './infrastructure/persistence/entities/member.entity';
 import { MembershipPlanEntity } from './infrastructure/persistence/entities/membership-plan.entity';
@@ -44,6 +46,8 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
                     SubscriptionEntity,
                     RenewalEntity,
                     DeviceEntity,
+                    AuditLogEntity,
+                    AuthUserEntity,
                 ],
                 synchronize: false,
             }),

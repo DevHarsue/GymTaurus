@@ -6,6 +6,7 @@ import { SubscriptionsService } from './services/subscriptions.service';
 import { EnrollmentService } from './services/enrollment.service';
 import { StatisticsService } from './services/statistics.service';
 import { DevicesService } from './services/devices.service';
+import { AuditLogService } from './services/audit-log.service';
 import { MembersProcessor } from '../infrastructure/jobs/members.processor';
 
 @Module({
@@ -17,6 +18,7 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         EnrollmentService,
         StatisticsService,
         DevicesService,
+        AuditLogService,
         MembersProcessor,
     ],
     exports: [
@@ -26,6 +28,7 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         EnrollmentService,
         StatisticsService,
         DevicesService,
+        AuditLogService,
         InfrastructureModule,
     ],
 })
