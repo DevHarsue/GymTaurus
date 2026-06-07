@@ -103,6 +103,19 @@ CREATE TABLE members.devices (
     created_at      TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
+-- Claves de idempotencia para escrituras del cliente offline-first.
+-- La app movil envia un header `Idempotency-Key` (UUID) por operacion;
+-- los replays devuelven la respuesta cacheada sin re-ejecutar.
+-- Sin trigger de auditoria: es metadata de transporte, no negocio.
+CREATE TABLE members.idempotency_keys (
+    key             UUID         PRIMARY KEY,
+    endpoint        VARCHAR(120) NOT NULL,
+    user_id         UUID,
+    response_status INT          NOT NULL,
+    response_body   JSONB,
+    created_at      TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
 -- Índices para queries frecuentes
 CREATE INDEX idx_members_cedula         ON members.members(cedula);
 CREATE INDEX idx_members_fingerprint    ON members.members(fingerprint_id);
@@ -114,6 +127,7 @@ CREATE INDEX idx_renewals_subscription  ON members.renewals(subscription_id);
 CREATE INDEX idx_renewals_renewed_at    ON members.renewals(renewed_at);
 CREATE INDEX idx_devices_code           ON members.devices(device_code);
 CREATE INDEX idx_devices_status         ON members.devices(status);
+CREATE INDEX idx_idempotency_created    ON members.idempotency_keys(created_at);
 
 -- ============================================================
 -- DATOS SEMILLA (para empezar a trabajar sin crear todo manual)

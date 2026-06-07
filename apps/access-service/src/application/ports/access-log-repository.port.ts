@@ -1,5 +1,13 @@
 export type AccessReason = 'active' | 'expired' | 'not_found';
 
+/** El evento (huella + timestamp + dispositivo) ya fue registrado. */
+export class DuplicateAccessLogError extends Error {
+    constructor() {
+        super('Evento de acceso duplicado');
+        this.name = 'DuplicateAccessLogError';
+    }
+}
+
 export interface CreateAccessLogInput {
     memberId: string;
     fingerprintId: number;

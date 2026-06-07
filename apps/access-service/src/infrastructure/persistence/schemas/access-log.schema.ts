@@ -40,3 +40,11 @@ export class AccessLog {
 }
 
 export const AccessLogSchema = SchemaFactory.createForClass(AccessLog);
+
+// Dedup para el batch offline (/access/sync): el mismo evento fisico
+// (huella + instante + dispositivo) solo puede registrarse una vez.
+// Reenviar el batch tras un timeout no duplica logs (E11000 -> skipped).
+AccessLogSchema.index(
+    { fingerprint_id: 1, timestamp: 1, device_id: 1 },
+    { unique: true, name: 'uniq_dedupe_sync' },
+);

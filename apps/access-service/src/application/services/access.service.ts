@@ -5,6 +5,7 @@ import { type SyncAccessItemDto } from '../../api/dtos/sync-access-item.dto';
 import {
     type AccessReason,
     type AccessLogRepositoryPort,
+    DuplicateAccessLogError,
 } from '../ports/access-log-repository.port';
 import { type CachePort } from '../ports/cache.port';
 import { type EventPublisherPort } from '../ports/event-publisher.port';
@@ -40,12 +41,21 @@ export class AccessService {
 
     async syncBatch(items: SyncAccessItemDto[]): Promise<{
         processed: number;
+        skipped: number;
         errors: number;
     }> {
         let processed = 0;
+        let skipped = 0;
         let errors = 0;
 
         for (const item of items) {
+            if (!this.isValidClientTimestamp(item.timestamp)) {
+                skipped += 1;
+                this.logger.warn(
+                    `[SYNC] Timestamp invalido o fuera de rango, item omitido: fingerprint=${item.fingerprint_id} ts=${item.timestamp}`,
+                );
+                continue;
+            }
             try {
                 await this.processAccess({
                     fingerprintId: item.fingerprint_id,
@@ -55,6 +65,11 @@ export class AccessService {
                 });
                 processed += 1;
             } catch (error) {
+                if (error instanceof DuplicateAccessLogError) {
+                    // Re-envio del mismo batch: el evento ya fue registrado.
+                    skipped += 1;
+                    continue;
+                }
                 errors += 1;
                 const message =
                     error instanceof Error ? error.message : 'unknown error';
@@ -64,7 +79,22 @@ export class AccessService {
             }
         }
 
-        return { processed, errors };
+        return { processed, skipped, errors };
+    }
+
+    /**
+     * Acepta timestamps del cliente con limites razonables: rechaza fechas
+     * invalidas, futuras (> 5 min de skew) o demasiado antiguas (> 90 dias).
+     */
+    private isValidClientTimestamp(raw: string): boolean {
+        const ts = new Date(raw);
+        if (Number.isNaN(ts.getTime())) return false;
+        const now = Date.now();
+        const MAX_SKEW_MS = 5 * 60 * 1000;
+        const MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
+        if (ts.getTime() > now + MAX_SKEW_MS) return false;
+        if (ts.getTime() < now - MAX_AGE_MS) return false;
+        return true;
     }
 
     async listLogs(

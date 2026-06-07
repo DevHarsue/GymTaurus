@@ -96,6 +96,13 @@ db.access_logs.createIndex(
     { name: 'idx_open_sessions' },
 );
 
+// Dedup del batch offline (/access/sync): el mismo evento fisico
+// (huella + instante + dispositivo) solo se registra una vez.
+db.access_logs.createIndex(
+    { fingerprint_id: 1, timestamp: 1, device_id: 1 },
+    { unique: true, name: 'uniq_dedupe_sync' },
+);
+
 // ============================================================
 // COLECCIÓN: audit_trail
 // Log inmutable de acciones administrativas y del sistema

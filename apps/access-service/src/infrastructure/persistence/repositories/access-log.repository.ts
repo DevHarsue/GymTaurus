@@ -6,6 +6,7 @@ import {
     type AccessLogModel,
     type AccessLogRepositoryPort,
     type CreateAccessLogInput,
+    DuplicateAccessLogError,
 } from '../../../application/ports/access-log-repository.port';
 import { AccessLog } from '../schemas/access-log.schema';
 import { AuditTrail } from '../schemas/audit-trail.schema';
@@ -20,19 +21,30 @@ export class AccessLogRepository implements AccessLogRepositoryPort {
     ) {}
 
     async create(payload: CreateAccessLogInput): Promise<AccessLogModel> {
-        const accessLog = await this.accessLogModel.create({
-            member_id: payload.memberId,
-            fingerprint_id: payload.fingerprintId,
-            member_name: payload.memberName,
-            granted: payload.granted,
-            reason: payload.reason,
-            device_id: payload.deviceId,
-            timestamp: payload.timestamp,
-            synced: payload.synced,
-            checked_out_at: null,
-            checkout_method: null,
-            duration_minutes: null,
-        });
+        let accessLog;
+        try {
+            accessLog = await this.accessLogModel.create({
+                member_id: payload.memberId,
+                fingerprint_id: payload.fingerprintId,
+                member_name: payload.memberName,
+                granted: payload.granted,
+                reason: payload.reason,
+                device_id: payload.deviceId,
+                timestamp: payload.timestamp,
+                synced: payload.synced,
+                checked_out_at: null,
+                checkout_method: null,
+                duration_minutes: null,
+            });
+        } catch (error) {
+            // E11000: violacion del indice unico uniq_dedupe_sync.
+            // Se lanza ANTES de insertar en audit_trail: los duplicados
+            // de un re-envio del batch offline no se auditan.
+            if ((error as { code?: number })?.code === 11000) {
+                throw new DuplicateAccessLogError();
+            }
+            throw error;
+        }
 
         await this.auditTrailModel.create({
             action: payload.granted ? 'access_granted' : 'access_denied',

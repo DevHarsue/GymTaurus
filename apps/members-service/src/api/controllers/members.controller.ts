@@ -11,6 +11,7 @@ import {
     Put,
     Query,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
@@ -39,6 +40,7 @@ import { UpdateMemberDto } from '../dtos/update-member.dto';
 import { CompleteProfileDto } from '../dtos/complete-profile.dto';
 import { RenewSubscriptionDto } from '../dtos/renew-subscription.dto';
 import { StartEnrollmentDto } from '../dtos/start-enrollment.dto';
+import { IdempotencyInterceptor } from '../interceptors/idempotency.interceptor';
 
 interface MemberResponse {
     id: string;
@@ -74,6 +76,7 @@ export class MembersController {
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseInterceptors(IdempotencyInterceptor)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Crear un nuevo miembro del gimnasio' })
@@ -273,6 +276,7 @@ export class MembersController {
 
     @Post('me/complete-profile')
     @UseGuards(JwtAuthGuard)
+    @UseInterceptors(IdempotencyInterceptor)
     @ApiBearerAuth()
     @ApiOperation({
         summary: 'Completar el perfil del miembro autenticado (cédula + teléfono)',
@@ -305,6 +309,7 @@ export class MembersController {
 
     @Put(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseInterceptors(IdempotencyInterceptor)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Actualizar el perfil de un miembro existente' })
@@ -316,6 +321,7 @@ export class MembersController {
 
     @Delete(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseInterceptors(IdempotencyInterceptor)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Eliminar un miembro del sistema' })
@@ -407,6 +413,7 @@ export class MembersController {
 
     @Post(':id/renew')
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseInterceptors(IdempotencyInterceptor)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
     @ApiOperation({

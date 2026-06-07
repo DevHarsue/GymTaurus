@@ -10,6 +10,7 @@ import { ApplicationModule } from './application/application.module';
 import { AuditLogEntity } from './infrastructure/persistence/entities/audit-log.entity';
 import { AuthUserEntity } from './infrastructure/persistence/entities/auth-user.entity';
 import { DeviceEntity } from './infrastructure/persistence/entities/device.entity';
+import { IdempotencyKeyEntity } from './infrastructure/persistence/entities/idempotency-key.entity';
 import { MemberEntity } from './infrastructure/persistence/entities/member.entity';
 import { MembershipPlanEntity } from './infrastructure/persistence/entities/membership-plan.entity';
 import { RenewalEntity } from './infrastructure/persistence/entities/renewal.entity';
@@ -48,6 +49,7 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
                     DeviceEntity,
                     AuditLogEntity,
                     AuthUserEntity,
+                    IdempotencyKeyEntity,
                 ],
                 synchronize: false,
             }),

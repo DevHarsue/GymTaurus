@@ -8,16 +8,19 @@ import { RedisCacheService } from './cache/redis-cache.service';
 import { AuthHttpService } from './integrations/auth-http.service';
 import { AuditLogEntity } from './persistence/entities/audit-log.entity';
 import { DeviceEntity } from './persistence/entities/device.entity';
+import { IdempotencyKeyEntity } from './persistence/entities/idempotency-key.entity';
 import { MemberEntity } from './persistence/entities/member.entity';
 import { MembershipPlanEntity } from './persistence/entities/membership-plan.entity';
 import { RenewalEntity } from './persistence/entities/renewal.entity';
 import { SubscriptionEntity } from './persistence/entities/subscription.entity';
 import { AuditLogRepository } from './persistence/repositories/audit-log.repository';
+import { IdempotencyRepository } from './persistence/repositories/idempotency.repository';
 import { MemberRepository } from './persistence/repositories/member.repository';
 import { PlanRepository } from './persistence/repositories/plan.repository';
 import { SubscriptionRepository } from './persistence/repositories/subscription.repository';
 import { StatisticsRepository } from './persistence/repositories/statistics.repository';
 import { DeviceRepository } from './persistence/repositories/device.repository';
+import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
 
 @Module({
     imports: [
@@ -28,6 +31,7 @@ import { DeviceRepository } from './persistence/repositories/device.repository';
             RenewalEntity,
             DeviceEntity,
             AuditLogEntity,
+            IdempotencyKeyEntity,
         ]),
         BullModule.registerQueue({ name: 'members-jobs' }),
     ],
@@ -38,6 +42,8 @@ import { DeviceRepository } from './persistence/repositories/device.repository';
         StatisticsRepository,
         DeviceRepository,
         AuditLogRepository,
+        IdempotencyRepository,
+        IdempotencyCleanupService,
         RedisCacheService,
         RedisEventPublisher,
         AuthHttpService,
@@ -56,6 +62,10 @@ import { DeviceRepository } from './persistence/repositories/device.repository';
         { provide: 'StatisticsRepositoryPort', useExisting: StatisticsRepository },
         { provide: 'DeviceRepositoryPort', useExisting: DeviceRepository },
         { provide: 'AuditLogRepositoryPort', useExisting: AuditLogRepository },
+        {
+            provide: 'IdempotencyRepositoryPort',
+            useExisting: IdempotencyRepository,
+        },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -68,6 +78,7 @@ import { DeviceRepository } from './persistence/repositories/device.repository';
         'StatisticsRepositoryPort',
         'DeviceRepositoryPort',
         'AuditLogRepositoryPort',
+        'IdempotencyRepositoryPort',
         BullModule,
     ],
 })
