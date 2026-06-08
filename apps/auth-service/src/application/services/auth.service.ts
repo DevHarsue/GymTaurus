@@ -253,7 +253,7 @@ export class AuthService {
 
         return {
             message:
-                'Si el email existe, recibiras instrucciones para restablecer tu contrasena',
+                'Si el email existe, recibiras instrucciones para restablecer tu contraseña',
         };
     }
 
@@ -281,7 +281,7 @@ export class AuthService {
         await this.userRepository.update(storedToken.userId, { passwordHash });
         await this.passwordResetTokenRepository.deleteByToken(token);
 
-        return { message: 'Contrasena restablecida exitosamente' };
+        return { message: 'contraseña restablecida exitosamente' };
     }
 
     async changePassword(
@@ -299,13 +299,13 @@ export class AuthService {
             user.passwordHash,
         );
         if (!isValid) {
-            throw new UnauthorizedException('Contrasena actual incorrecta');
+            throw new UnauthorizedException('contraseña actual incorrecta');
         }
 
         const passwordHash = await bcrypt.hash(newPassword, 10);
         await this.userRepository.update(userId, { passwordHash });
 
-        return { message: 'Contrasena actualizada exitosamente' };
+        return { message: 'contraseña actualizada exitosamente' };
     }
 
     private generateAccessToken(

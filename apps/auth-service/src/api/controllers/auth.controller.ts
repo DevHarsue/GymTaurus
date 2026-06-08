@@ -109,9 +109,9 @@ export class AuthController {
     @Post('forgot-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Solicitar restablecimiento de contrasena',
+        summary: 'Solicitar restablecimiento de contraseña',
         description:
-            'Genera un token de restablecimiento de contrasena si el email existe. ' +
+            'Genera un token de restablecimiento de contraseña si el email existe. ' +
             'El token se loguea en consola del servidor (no se envia email aun). ' +
             'Siempre retorna el mismo mensaje para prevenir enumeracion de emails.',
     })
@@ -123,12 +123,12 @@ export class AuthController {
     @Post('reset-password')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Restablecer contrasena con token',
+        summary: 'Restablecer contraseña con token',
         description:
-            'Verifica el token de restablecimiento y cambia la contrasena. ' +
+            'Verifica el token de restablecimiento y cambia la contraseña. ' +
             'El token es de un solo uso y expira en 1 hora.',
     })
-    @ApiOkResponse({ description: 'Contrasena restablecida exitosamente' })
+    @ApiOkResponse({ description: 'contraseña restablecida exitosamente' })
     @ApiUnauthorizedResponse({
         description: 'Token invalido o expirado',
     })
@@ -141,14 +141,14 @@ export class AuthController {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Cambiar contrasena del usuario autenticado',
+        summary: 'Cambiar contraseña del usuario autenticado',
         description:
-            'Permite al usuario cambiar su contrasena proporcionando la contrasena actual y la nueva. ' +
+            'Permite al usuario cambiar su contraseña proporcionando la contraseña actual y la nueva. ' +
             'Requiere autenticacion JWT.',
     })
-    @ApiOkResponse({ description: 'Contrasena actualizada exitosamente' })
+    @ApiOkResponse({ description: 'contraseña actualizada exitosamente' })
     @ApiUnauthorizedResponse({
-        description: 'Contrasena actual incorrecta o token invalido',
+        description: 'contraseña actual incorrecta o token invalido',
     })
     changePassword(
         @Body() dto: ChangePasswordRequestDto,

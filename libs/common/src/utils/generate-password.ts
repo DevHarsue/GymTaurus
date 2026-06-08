@@ -19,7 +19,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /**
- * Genera una contrasena que SIEMPRE cumple las reglas de IsTaurusPassword:
+ * Genera una contraseña que SIEMPRE cumple las reglas de IsTaurusPassword:
  * - longitud >= 8 (default 12)
  * - >= 2 digitos
  * - >= 1 mayuscula
