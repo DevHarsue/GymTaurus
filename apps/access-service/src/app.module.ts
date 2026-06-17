@@ -2,12 +2,15 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from '@libs/common';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
+        PassportModule.register({ defaultStrategy: 'jwt' }),
         MongooseModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({
@@ -29,5 +32,6 @@ import { ApplicationModule } from './application/application.module';
         ApplicationModule,
         ApiModule,
     ],
+    providers: [JwtStrategy],
 })
 export class AppModule {}

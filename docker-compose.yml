@@ -168,6 +168,7 @@ services:
             REDIS_HOST: redis
             REDIS_PORT: 6379
             MQTT_URL: mqtt://mosquitto:1883
+            JWT_SECRET: ${JWT_SECRET:-change-me}
         depends_on:
             mongo:
                 condition: service_healthy
