@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { requestIdMiddleware } from '@libs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.enableCors();
+    app.use(requestIdMiddleware);
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true,
