@@ -16,6 +16,10 @@ export class MqttGateway implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(MqttGateway.name);
     private client: MqttClient | null = null;
 
+    // Lista de devices autorizados a publicar por MQTT. Si llega un mensaje
+    // con un device_id que no esta aqui, se descarta.
+    private readonly allowedDeviceIds = ['esp32-recepcion'];
+
     constructor(
         private readonly configService: ConfigService,
         private readonly accessService: AccessService,
@@ -79,6 +83,13 @@ export class MqttGateway implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
+        if (!this.allowedDeviceIds.includes(parsed.device_id)) {
+            this.logger.warn(
+                `device_id no autorizado en gym/access/request: ${parsed.device_id}`,
+            );
+            return;
+        }
+
         this.logger.log(
             `[REQUEST] gym/access/request <- device=${parsed.device_id} fingerprint_id=${parsed.fingerprint_id} timestamp=${parsed.timestamp}`,
         );
@@ -98,6 +109,13 @@ export class MqttGateway implements OnModuleInit, OnModuleDestroy {
         if (!parsed) {
             this.logger.warn(
                 `Payload invalido en gym/device/heartbeat: ${payload}`,
+            );
+            return;
+        }
+
+        if (!this.allowedDeviceIds.includes(parsed.device_id)) {
+            this.logger.warn(
+                `device_id no autorizado en gym/device/heartbeat: ${parsed.device_id}`,
             );
             return;
         }
