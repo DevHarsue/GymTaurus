@@ -1,10 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
+    ApiBearerAuth,
     ApiOkResponse,
     ApiOperation,
     ApiQuery,
     ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard, Role, Roles, RolesGuard } from '@libs/common';
 import { AccessStatisticsService } from '../../application/services/access-statistics.service';
 
 @ApiTags('Access Statistics')
@@ -21,6 +23,9 @@ export class AccessStatisticsController {
     }
 
     @Get('dashboard')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Dashboard completo de estadísticas de acceso' })
     @ApiOkResponse({ description: 'KPIs de acceso al gimnasio' })
     getDashboard() {
@@ -28,6 +33,9 @@ export class AccessStatisticsController {
     }
 
     @Get('overview')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Resumen de accesos (hoy, semana, mes)' })
     @ApiOkResponse({ description: 'Conteo de accesos y tasa de denegación' })
     getOverview() {
@@ -35,6 +43,9 @@ export class AccessStatisticsController {
     }
 
     @Get('hourly')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Distribución de accesos por hora' })
     @ApiQuery({ name: 'days', required: false, description: 'Período en días (default: 30)' })
     @ApiOkResponse({ description: 'Accesos agrupados por hora del día' })
@@ -45,6 +56,9 @@ export class AccessStatisticsController {
     }
 
     @Get('daily')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Distribución de accesos por día de la semana' })
     @ApiQuery({ name: 'weeks', required: false, description: 'Período en semanas (default: 4)' })
     @ApiOkResponse({ description: 'Accesos agrupados por día de la semana' })
@@ -55,6 +69,9 @@ export class AccessStatisticsController {
     }
 
     @Get('top-members')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Miembros con más visitas (último mes)' })
     @ApiQuery({ name: 'limit', required: false, description: 'Cantidad de resultados (default: 10)' })
     @ApiOkResponse({ description: 'Ranking de miembros por asistencia' })
@@ -65,6 +82,9 @@ export class AccessStatisticsController {
     }
 
     @Get('denials')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Desglose de accesos denegados por razón' })
     @ApiQuery({ name: 'days', required: false, description: 'Período en días (default: 30)' })
     @ApiOkResponse({ description: 'Conteo de denegaciones agrupado por razón' })
