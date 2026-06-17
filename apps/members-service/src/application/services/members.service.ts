@@ -36,6 +36,20 @@ export class MembersService {
             throw new ConflictException(`Member with cedula ${payload.cedula} already exists`);
         }
 
+        // Validar fingerprint_id antes de llamar a auth-service.
+        // Si no se valida aqui, auth crea el user y despues falla el INSERT
+        // por la constraint unica, dejando un usuario huerfano en auth.
+        if (payload.fingerprintId !== undefined) {
+            const fingerprintTaken = await this.memberRepository.findByFingerprintId(
+                payload.fingerprintId,
+            );
+            if (fingerprintTaken) {
+                throw new ConflictException(
+                    `El fingerprint_id ${payload.fingerprintId} ya esta asignado a otro miembro`,
+                );
+            }
+        }
+
         const generatedPassword = payload.password ? undefined : generateCompliantPassword(12);
         const password = payload.password ?? generatedPassword!;
 
