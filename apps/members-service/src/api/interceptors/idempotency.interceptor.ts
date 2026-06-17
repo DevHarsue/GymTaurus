@@ -10,6 +10,7 @@ import {
 import type { Request, Response } from 'express';
 import { from, Observable, of } from 'rxjs';
 import { catchError, mergeMap, map } from 'rxjs/operators';
+import { HTTP_HEADERS } from '@libs/common';
 import type { IdempotencyRepositoryPort } from '../../application/ports/idempotency-repository.port';
 
 const UUID_RE =
@@ -45,7 +46,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
         const req = context.switchToHttp().getRequest<AuthenticatedRequest>();
         const res = context.switchToHttp().getResponse<Response>();
 
-        const rawKey = req.header('Idempotency-Key');
+        const rawKey = req.header(HTTP_HEADERS.IDEMPOTENCY_KEY);
         if (!rawKey) {
             return next.handle();
         }
