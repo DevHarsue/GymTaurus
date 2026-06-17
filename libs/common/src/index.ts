@@ -7,6 +7,7 @@ export * from './guards/jwt-auth.guard';
 export * from './guards/optional-jwt-auth.guard';
 export * from './guards/roles.guard';
 export * from './interfaces/jwt-payload.interface';
+export * from './middleware/request-id.middleware';
 export * from './strategies/jwt.strategy';
 export * from './validators';
 export * from './utils/generate-password';
