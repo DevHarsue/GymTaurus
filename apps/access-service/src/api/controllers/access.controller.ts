@@ -5,13 +5,16 @@ import {
     ParseArrayPipe,
     Post,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
     ApiBadRequestResponse,
+    ApiBearerAuth,
     ApiOkResponse,
     ApiOperation,
     ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard, Role, Roles, RolesGuard } from '@libs/common';
 import { AccessService } from '../../application/services/access.service';
 import { AccessLogQueryDto } from '../dtos/access-log-query.dto';
 import { SyncAccessItemDto } from '../dtos/sync-access-item.dto';
@@ -29,6 +32,9 @@ export class AccessController {
     }
 
     @Get('log')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Listar logs de acceso' })
     @ApiOkResponse({ description: 'Listado de eventos de acceso' })
     listLogs(@Query() query: AccessLogQueryDto) {
@@ -38,6 +44,9 @@ export class AccessController {
     }
 
     @Post('sync')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
     @ApiOperation({ summary: 'Sincronizar lote offline de eventos de acceso' })
     @ApiOkResponse({ description: 'Resultado del procesamiento del lote' })
     @ApiBadRequestResponse({
