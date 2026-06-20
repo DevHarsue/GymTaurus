@@ -15,4 +15,4 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
-CMD ["node", "dist/apps/access-service/main.js"]
+CMD ["node", "dist/apps/access-service/apps/access-service/src/main.js"]
