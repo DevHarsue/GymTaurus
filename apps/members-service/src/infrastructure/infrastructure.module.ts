@@ -13,6 +13,13 @@ import { MemberEntity } from './persistence/entities/member.entity';
 import { MembershipPlanEntity } from './persistence/entities/membership-plan.entity';
 import { RenewalEntity } from './persistence/entities/renewal.entity';
 import { SubscriptionEntity } from './persistence/entities/subscription.entity';
+import { ExerciseEntity } from './persistence/entities/exercise.entity';
+import { RoutineEntity } from './persistence/entities/routine.entity';
+import { RoutineDayEntity } from './persistence/entities/routine-day.entity';
+import { RoutineExerciseEntity } from './persistence/entities/routine-exercise.entity';
+import { RoutineAssignmentEntity } from './persistence/entities/routine-assignment.entity';
+import { WorkoutLogEntity } from './persistence/entities/workout-log.entity';
+import { SetLogEntity } from './persistence/entities/set-log.entity';
 import { AuditLogRepository } from './persistence/repositories/audit-log.repository';
 import { IdempotencyRepository } from './persistence/repositories/idempotency.repository';
 import { MemberRepository } from './persistence/repositories/member.repository';
@@ -20,6 +27,10 @@ import { PlanRepository } from './persistence/repositories/plan.repository';
 import { SubscriptionRepository } from './persistence/repositories/subscription.repository';
 import { StatisticsRepository } from './persistence/repositories/statistics.repository';
 import { DeviceRepository } from './persistence/repositories/device.repository';
+import { ExerciseRepository } from './persistence/repositories/exercise.repository';
+import { RoutineRepository } from './persistence/repositories/routine.repository';
+import { RoutineAssignmentRepository } from './persistence/repositories/routine-assignment.repository';
+import { WorkoutLogRepository } from './persistence/repositories/workout-log.repository';
 import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
 
 @Module({
@@ -32,6 +43,13 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
             DeviceEntity,
             AuditLogEntity,
             IdempotencyKeyEntity,
+            ExerciseEntity,
+            RoutineEntity,
+            RoutineDayEntity,
+            RoutineExerciseEntity,
+            RoutineAssignmentEntity,
+            WorkoutLogEntity,
+            SetLogEntity,
         ]),
         BullModule.registerQueue({ name: 'members-jobs' }),
     ],
@@ -43,6 +61,10 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
         DeviceRepository,
         AuditLogRepository,
         IdempotencyRepository,
+        ExerciseRepository,
+        RoutineRepository,
+        RoutineAssignmentRepository,
+        WorkoutLogRepository,
         IdempotencyCleanupService,
         RedisCacheService,
         RedisEventPublisher,
@@ -66,6 +88,16 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
             provide: 'IdempotencyRepositoryPort',
             useExisting: IdempotencyRepository,
         },
+        { provide: 'ExerciseRepositoryPort', useExisting: ExerciseRepository },
+        { provide: 'RoutineRepositoryPort', useExisting: RoutineRepository },
+        {
+            provide: 'RoutineAssignmentRepositoryPort',
+            useExisting: RoutineAssignmentRepository,
+        },
+        {
+            provide: 'WorkoutLogRepositoryPort',
+            useExisting: WorkoutLogRepository,
+        },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -79,6 +111,10 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
         'DeviceRepositoryPort',
         'AuditLogRepositoryPort',
         'IdempotencyRepositoryPort',
+        'ExerciseRepositoryPort',
+        'RoutineRepositoryPort',
+        'RoutineAssignmentRepositoryPort',
+        'WorkoutLogRepositoryPort',
         BullModule,
     ],
 })

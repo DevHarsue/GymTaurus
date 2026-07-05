@@ -15,6 +15,13 @@ import { MemberEntity } from './infrastructure/persistence/entities/member.entit
 import { MembershipPlanEntity } from './infrastructure/persistence/entities/membership-plan.entity';
 import { RenewalEntity } from './infrastructure/persistence/entities/renewal.entity';
 import { SubscriptionEntity } from './infrastructure/persistence/entities/subscription.entity';
+import { ExerciseEntity } from './infrastructure/persistence/entities/exercise.entity';
+import { RoutineEntity } from './infrastructure/persistence/entities/routine.entity';
+import { RoutineDayEntity } from './infrastructure/persistence/entities/routine-day.entity';
+import { RoutineExerciseEntity } from './infrastructure/persistence/entities/routine-exercise.entity';
+import { RoutineAssignmentEntity } from './infrastructure/persistence/entities/routine-assignment.entity';
+import { WorkoutLogEntity } from './infrastructure/persistence/entities/workout-log.entity';
+import { SetLogEntity } from './infrastructure/persistence/entities/set-log.entity';
 
 @Module({
     imports: [
@@ -50,6 +57,13 @@ import { SubscriptionEntity } from './infrastructure/persistence/entities/subscr
                     AuditLogEntity,
                     AuthUserEntity,
                     IdempotencyKeyEntity,
+                    ExerciseEntity,
+                    RoutineEntity,
+                    RoutineDayEntity,
+                    RoutineExerciseEntity,
+                    RoutineAssignmentEntity,
+                    WorkoutLogEntity,
+                    SetLogEntity,
                 ],
                 synchronize: false,
             }),

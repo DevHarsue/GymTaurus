@@ -7,6 +7,9 @@ import { EnrollmentService } from './services/enrollment.service';
 import { StatisticsService } from './services/statistics.service';
 import { DevicesService } from './services/devices.service';
 import { AuditLogService } from './services/audit-log.service';
+import { ExercisesService } from './services/exercises.service';
+import { RoutinesService } from './services/routines.service';
+import { WorkoutLogsService } from './services/workout-logs.service';
 import { MembersProcessor } from '../infrastructure/jobs/members.processor';
 
 @Module({
@@ -19,6 +22,9 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         StatisticsService,
         DevicesService,
         AuditLogService,
+        ExercisesService,
+        RoutinesService,
+        WorkoutLogsService,
         MembersProcessor,
     ],
     exports: [
@@ -29,6 +35,9 @@ import { MembersProcessor } from '../infrastructure/jobs/members.processor';
         StatisticsService,
         DevicesService,
         AuditLogService,
+        ExercisesService,
+        RoutinesService,
+        WorkoutLogsService,
         InfrastructureModule,
     ],
 })

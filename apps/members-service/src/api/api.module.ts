@@ -6,6 +6,8 @@ import { SubscriptionsController } from './controllers/subscriptions.controller'
 import { StatisticsController } from './controllers/statistics.controller';
 import { DevicesController } from './controllers/devices.controller';
 import { AuditLogController } from './controllers/audit-log.controller';
+import { ExercisesController } from './controllers/exercises.controller';
+import { RoutinesController } from './controllers/routines.controller';
 
 @Module({
     imports: [ApplicationModule],
@@ -16,6 +18,8 @@ import { AuditLogController } from './controllers/audit-log.controller';
         StatisticsController,
         DevicesController,
         AuditLogController,
+        ExercisesController,
+        RoutinesController,
     ],
 })
 export class ApiModule {}
