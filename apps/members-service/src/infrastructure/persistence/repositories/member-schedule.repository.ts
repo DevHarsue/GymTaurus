@@ -69,6 +69,10 @@ export class MemberScheduleRepository implements MemberScheduleRepositoryPort {
             );
     }
 
+    async deleteByRoutineId(routineId: string): Promise<void> {
+        await this.repository.delete({ routineId });
+    }
+
     async replaceForMember(
         memberId: string,
         entries: ScheduleEntryData[],

@@ -72,6 +72,9 @@ export class RoutinesService {
         if (!deleted) {
             throw new NotFoundException(`Rutina ${id} no encontrada`);
         }
+        // Quitar la rutina del horario de cualquier miembro que la tuviera
+        // (evita que un miembro quede con una rutina borrada).
+        await this.scheduleRepository.deleteByRoutineId(id);
         await this.eventPublisher.publish('members.routine.deleted', { id });
     }
 

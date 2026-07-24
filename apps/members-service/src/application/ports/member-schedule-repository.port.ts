@@ -25,4 +25,6 @@ export interface MemberScheduleRepositoryPort {
         entries: ScheduleEntryData[],
         assignedBy?: string,
     ): Promise<ScheduledDay[]>;
+    /** Elimina todas las entradas de horario que referencian una rutina. */
+    deleteByRoutineId(routineId: string): Promise<void>;
 }

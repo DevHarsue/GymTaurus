@@ -17,6 +17,13 @@ import { type UserRepositoryPort } from '../ports/user-repository.port';
 import { type RefreshTokenRepositoryPort } from '../ports/refresh-token-repository.port';
 import { type PasswordResetTokenRepositoryPort } from '../ports/password-reset-token-repository.port';
 
+/**
+ * Marcador de "sin contrasena real": los usuarios creados via Google se
+ * guardan con este valor en password_hash (no es un hash bcrypt valido), por
+ * lo que no pueden autenticarse ni "cambiar" contrasena hasta establecer una.
+ */
+const OAUTH_NO_PASSWORD = 'GOOGLE_OAUTH';
+
 @Injectable()
 export class AuthService {
     private googleClient: OAuth2Client;
@@ -145,7 +152,7 @@ export class AuthService {
                 user = await this.userRepository.create({
                     email,
                     googleId,
-                    passwordHash: 'GOOGLE_OAUTH',
+                    passwordHash: OAUTH_NO_PASSWORD,
                     role: 'member' as Role,
                 });
                 isNewUser = true;
@@ -214,15 +221,24 @@ export class AuthService {
         return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }
 
-    async getProfile(
-        userId: string,
-    ): Promise<{ id: string; email: string; role: Role }> {
+    async getProfile(userId: string): Promise<{
+        id: string;
+        email: string;
+        role: Role;
+        hasPassword: boolean;
+    }> {
         const user = await this.userRepository.findById(userId);
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
 
-        return { id: user.id, email: user.email, role: user.role };
+        return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            // false si es un usuario de Google que aun no ha establecido clave.
+            hasPassword: user.passwordHash !== OAUTH_NO_PASSWORD,
+        };
     }
 
     async logout(refreshToken: string): Promise<void> {
@@ -286,7 +302,7 @@ export class AuthService {
 
     async changePassword(
         userId: string,
-        currentPassword: string,
+        currentPassword: string | undefined,
         newPassword: string,
     ): Promise<{ message: string }> {
         const user = await this.userRepository.findById(userId);
@@ -294,18 +310,28 @@ export class AuthService {
             throw new UnauthorizedException('Usuario no encontrado');
         }
 
-        const isValid = await bcrypt.compare(
-            currentPassword,
-            user.passwordHash,
-        );
-        if (!isValid) {
-            throw new UnauthorizedException('Contrasena actual incorrecta');
+        const hasPassword = user.passwordHash !== OAUTH_NO_PASSWORD;
+
+        // Usuario con contrasena real: validar la actual. Usuario de Google que
+        // aun no tiene clave: se permite ESTABLECER una sin pedir la actual.
+        if (hasPassword) {
+            const isValid = await bcrypt.compare(
+                currentPassword ?? '',
+                user.passwordHash,
+            );
+            if (!isValid) {
+                throw new UnauthorizedException('Contrasena actual incorrecta');
+            }
         }
 
         const passwordHash = await bcrypt.hash(newPassword, 10);
         await this.userRepository.update(userId, { passwordHash });
 
-        return { message: 'Contrasena actualizada exitosamente' };
+        return {
+            message: hasPassword
+                ? 'Contrasena actualizada exitosamente'
+                : 'Contrasena establecida exitosamente',
+        };
     }
 
     private generateAccessToken(
