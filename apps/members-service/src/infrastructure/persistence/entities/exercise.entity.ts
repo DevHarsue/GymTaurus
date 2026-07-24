@@ -23,6 +23,14 @@ export class ExerciseEntity {
     @Column({ type: 'varchar', length: 80, nullable: true })
     equipment?: string | null;
 
+    @Column({
+        type: 'varchar',
+        length: 20,
+        name: 'measurement_type',
+        default: 'weight_reps',
+    })
+    measurementType!: string;
+
     @Column({ type: 'boolean', name: 'is_active', default: true })
     isActive!: boolean;
 

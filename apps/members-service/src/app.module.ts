@@ -22,6 +22,7 @@ import { RoutineExerciseEntity } from './infrastructure/persistence/entities/rou
 import { RoutineAssignmentEntity } from './infrastructure/persistence/entities/routine-assignment.entity';
 import { WorkoutLogEntity } from './infrastructure/persistence/entities/workout-log.entity';
 import { SetLogEntity } from './infrastructure/persistence/entities/set-log.entity';
+import { MemberScheduleEntity } from './infrastructure/persistence/entities/member-schedule.entity';
 
 @Module({
     imports: [
@@ -64,6 +65,7 @@ import { SetLogEntity } from './infrastructure/persistence/entities/set-log.enti
                     RoutineAssignmentEntity,
                     WorkoutLogEntity,
                     SetLogEntity,
+                    MemberScheduleEntity,
                 ],
                 synchronize: false,
             }),

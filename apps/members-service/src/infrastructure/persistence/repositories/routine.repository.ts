@@ -49,10 +49,13 @@ export class RoutineRepository implements RoutineRepositoryPort {
                         routineDayId: ex.routineDayId,
                         exerciseId: ex.exerciseId ?? null,
                         exerciseName: ex.exerciseName,
+                        measurementType: ex.measurementType,
                         orderIndex: ex.orderIndex,
                         sets: ex.sets,
                         reps: ex.reps,
                         weight: ex.weight ?? null,
+                        durationSeconds: ex.durationSeconds ?? null,
+                        distance: ex.distance ?? null,
                         restSeconds: ex.restSeconds ?? null,
                         rpe: ex.rpe ?? null,
                         notes: ex.notes ?? null,
@@ -70,10 +73,13 @@ export class RoutineRepository implements RoutineRepositoryPort {
                 const exEntity = new RoutineExerciseEntity();
                 exEntity.exerciseId = ex.exerciseId ?? null;
                 exEntity.exerciseName = ex.exerciseName;
+                exEntity.measurementType = ex.measurementType ?? 'weight_reps';
                 exEntity.orderIndex = ex.orderIndex ?? exIdx;
                 exEntity.sets = ex.sets;
                 exEntity.reps = ex.reps;
                 exEntity.weight = ex.weight ?? null;
+                exEntity.durationSeconds = ex.durationSeconds ?? null;
+                exEntity.distance = ex.distance ?? null;
                 exEntity.restSeconds = ex.restSeconds ?? null;
                 exEntity.rpe = ex.rpe ?? null;
                 exEntity.notes = ex.notes ?? null;

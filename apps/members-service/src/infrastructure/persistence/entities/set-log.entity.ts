@@ -43,6 +43,18 @@ export class SetLogEntity {
     })
     weightDone?: number | null;
 
+    @Column({ type: 'int', name: 'duration_done', nullable: true })
+    durationDone?: number | null;
+
+    @Column({
+        type: 'decimal',
+        precision: 8,
+        scale: 2,
+        name: 'distance_done',
+        nullable: true,
+    })
+    distanceDone?: number | null;
+
     @Column({ type: 'boolean', default: true })
     done!: boolean;
 

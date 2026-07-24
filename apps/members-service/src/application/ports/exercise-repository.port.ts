@@ -1,9 +1,12 @@
+export type MeasurementType = 'weight_reps' | 'reps' | 'time' | 'distance';
+
 export interface ExerciseModel {
     id: string;
     name: string;
     description?: string | null;
     muscleGroup?: string | null;
     equipment?: string | null;
+    measurementType: string;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -14,6 +17,7 @@ export interface CreateExerciseData {
     description?: string;
     muscleGroup?: string;
     equipment?: string;
+    measurementType?: string;
     createdBy?: string;
 }
 

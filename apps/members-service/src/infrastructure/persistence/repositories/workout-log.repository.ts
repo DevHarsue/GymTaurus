@@ -43,6 +43,11 @@ export class WorkoutLogRepository implements WorkoutLogRepositoryPort {
                         s.weightDone === null || s.weightDone === undefined
                             ? null
                             : Number(s.weightDone),
+                    durationDone: s.durationDone ?? null,
+                    distanceDone:
+                        s.distanceDone === null || s.distanceDone === undefined
+                            ? null
+                            : Number(s.distanceDone),
                     done: s.done,
                 })),
         };
@@ -65,6 +70,8 @@ export class WorkoutLogRepository implements WorkoutLogRepositoryPort {
                 setEntity.setNumber = s.setNumber;
                 setEntity.repsDone = s.repsDone ?? null;
                 setEntity.weightDone = s.weightDone ?? null;
+                setEntity.durationDone = s.durationDone ?? null;
+                setEntity.distanceDone = s.distanceDone ?? null;
                 setEntity.done = s.done ?? true;
                 return setEntity;
             }),

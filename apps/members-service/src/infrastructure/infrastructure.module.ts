@@ -20,6 +20,7 @@ import { RoutineExerciseEntity } from './persistence/entities/routine-exercise.e
 import { RoutineAssignmentEntity } from './persistence/entities/routine-assignment.entity';
 import { WorkoutLogEntity } from './persistence/entities/workout-log.entity';
 import { SetLogEntity } from './persistence/entities/set-log.entity';
+import { MemberScheduleEntity } from './persistence/entities/member-schedule.entity';
 import { AuditLogRepository } from './persistence/repositories/audit-log.repository';
 import { IdempotencyRepository } from './persistence/repositories/idempotency.repository';
 import { MemberRepository } from './persistence/repositories/member.repository';
@@ -31,6 +32,7 @@ import { ExerciseRepository } from './persistence/repositories/exercise.reposito
 import { RoutineRepository } from './persistence/repositories/routine.repository';
 import { RoutineAssignmentRepository } from './persistence/repositories/routine-assignment.repository';
 import { WorkoutLogRepository } from './persistence/repositories/workout-log.repository';
+import { MemberScheduleRepository } from './persistence/repositories/member-schedule.repository';
 import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
 
 @Module({
@@ -50,6 +52,7 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
             RoutineAssignmentEntity,
             WorkoutLogEntity,
             SetLogEntity,
+            MemberScheduleEntity,
         ]),
         BullModule.registerQueue({ name: 'members-jobs' }),
     ],
@@ -65,6 +68,7 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
         RoutineRepository,
         RoutineAssignmentRepository,
         WorkoutLogRepository,
+        MemberScheduleRepository,
         IdempotencyCleanupService,
         RedisCacheService,
         RedisEventPublisher,
@@ -98,6 +102,10 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
             provide: 'WorkoutLogRepositoryPort',
             useExisting: WorkoutLogRepository,
         },
+        {
+            provide: 'MemberScheduleRepositoryPort',
+            useExisting: MemberScheduleRepository,
+        },
     ],
     exports: [
         'MemberRepositoryPort',
@@ -115,6 +123,7 @@ import { IdempotencyCleanupService } from './jobs/idempotency-cleanup.service';
         'RoutineRepositoryPort',
         'RoutineAssignmentRepositoryPort',
         'WorkoutLogRepositoryPort',
+        'MemberScheduleRepositoryPort',
         BullModule,
     ],
 })

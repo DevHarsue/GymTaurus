@@ -3,10 +3,13 @@ export interface RoutineExerciseModel {
     routineDayId: string;
     exerciseId?: string | null;
     exerciseName: string;
+    measurementType: string;
     orderIndex: number;
     sets: number;
     reps: string;
     weight?: string | null;
+    durationSeconds?: number | null;
+    distance?: string | null;
     restSeconds?: number | null;
     rpe?: string | null;
     notes?: string | null;
@@ -39,10 +42,13 @@ export interface RoutineDetail extends RoutineModel {
 export interface CreateRoutineExerciseData {
     exerciseId?: string;
     exerciseName: string;
+    measurementType?: string;
     orderIndex?: number;
     sets: number;
     reps: string;
     weight?: string;
+    durationSeconds?: number;
+    distance?: string;
     restSeconds?: number;
     rpe?: string;
     notes?: string;

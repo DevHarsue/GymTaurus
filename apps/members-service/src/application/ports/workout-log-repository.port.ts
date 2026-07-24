@@ -5,6 +5,8 @@ export interface SetLogModel {
     setNumber: number;
     repsDone?: number | null;
     weightDone?: number | null;
+    durationDone?: number | null;
+    distanceDone?: number | null;
     done: boolean;
 }
 
@@ -27,6 +29,8 @@ export interface CreateSetLogData {
     setNumber: number;
     repsDone?: number;
     weightDone?: number;
+    durationDone?: number;
+    distanceDone?: number;
     done?: boolean;
 }
 

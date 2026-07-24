@@ -22,6 +22,10 @@ export class CreateRoutineExerciseDto {
     exerciseName!: string;
 
     @IsOptional()
+    @IsIn(['weight_reps', 'reps', 'time', 'distance'])
+    measurementType?: string;
+
+    @IsOptional()
     @IsInt()
     @Min(0)
     orderIndex?: number;
@@ -37,6 +41,15 @@ export class CreateRoutineExerciseDto {
     @IsOptional()
     @IsString()
     weight?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    durationSeconds?: number;
+
+    @IsOptional()
+    @IsString()
+    distance?: string;
 
     @IsOptional()
     @IsInt()

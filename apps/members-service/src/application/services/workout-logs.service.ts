@@ -37,6 +37,8 @@ export class WorkoutLogsService {
                 setNumber: s.setNumber,
                 repsDone: s.repsDone,
                 weightDone: s.weightDone,
+                durationDone: s.durationDone,
+                distanceDone: s.distanceDone,
                 done: s.done,
             })),
         });

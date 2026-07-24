@@ -22,6 +22,7 @@ export class ExerciseRepository implements ExerciseRepositoryPort {
             description: entity.description ?? null,
             muscleGroup: entity.muscleGroup ?? null,
             equipment: entity.equipment ?? null,
+            measurementType: entity.measurementType,
             isActive: entity.isActive,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
@@ -34,6 +35,7 @@ export class ExerciseRepository implements ExerciseRepositoryPort {
             description: payload.description ?? null,
             muscleGroup: payload.muscleGroup ?? null,
             equipment: payload.equipment ?? null,
+            measurementType: payload.measurementType ?? 'weight_reps',
             createdBy: payload.createdBy ?? null,
         });
         const saved = await this.repository.save(entity);

@@ -4,33 +4,27 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { AssignRoutineDto } from '../../api/dtos/assign-routine.dto';
 import { CreateRoutineDto } from '../../api/dtos/create-routine.dto';
 import { UpdateRoutineDto } from '../../api/dtos/update-routine.dto';
+import { SetMemberScheduleDto } from '../../api/dtos/set-member-schedule.dto';
 import { type EventPublisherPort } from '../ports/event-publisher.port';
 import {
-    type RoutineAssignmentModel,
-    type RoutineAssignmentRepositoryPort,
-} from '../ports/routine-assignment-repository.port';
+    type MemberScheduleRepositoryPort,
+    type ScheduledDay,
+} from '../ports/member-schedule-repository.port';
 import {
     type RoutineDetail,
     type RoutineModel,
     type RoutineRepositoryPort,
 } from '../ports/routine-repository.port';
 
-/** Paquete que consume la app del miembro (offline-first). */
-export interface MemberRoutineBundle {
-    assignment: RoutineAssignmentModel | null;
-    routine: RoutineDetail | null;
-}
-
 @Injectable()
 export class RoutinesService {
     constructor(
         @Inject('RoutineRepositoryPort')
         private readonly routineRepository: RoutineRepositoryPort,
-        @Inject('RoutineAssignmentRepositoryPort')
-        private readonly assignmentRepository: RoutineAssignmentRepositoryPort,
+        @Inject('MemberScheduleRepositoryPort')
+        private readonly scheduleRepository: MemberScheduleRepositoryPort,
         @Inject('EventPublisherPort')
         private readonly eventPublisher: EventPublisherPort,
     ) {}
@@ -81,60 +75,55 @@ export class RoutinesService {
         await this.eventPublisher.publish('members.routine.deleted', { id });
     }
 
-    async assignRoutine(
-        payload: AssignRoutineDto,
-        assignedBy: string,
-    ): Promise<RoutineAssignmentModel> {
-        const routine = await this.routineRepository.findById(payload.routineId);
-        if (!routine) {
-            throw new NotFoundException(
-                `Rutina ${payload.routineId} no encontrada`,
-            );
-        }
+    // ─── Horario semanal del miembro ────────────────────────────────────
 
-        // Validar que cada dia mapeado pertenezca a la rutina.
-        const validDayIds = new Set(routine.days.map((d) => d.id));
-        for (const [weekday, dayId] of Object.entries(payload.dayMapping)) {
-            if (dayId && !validDayIds.has(dayId)) {
+    /** Reemplaza el horario semanal de un miembro (cada día → rutina + día). */
+    async setMemberSchedule(
+        memberId: string,
+        payload: SetMemberScheduleDto,
+        assignedBy: string,
+    ): Promise<ScheduledDay[]> {
+        // Validar que cada día referenciado pertenezca a su rutina.
+        const routineCache = new Map<string, RoutineDetail | null>();
+        for (const entry of payload.entries) {
+            let routine = routineCache.get(entry.routineId);
+            if (routine === undefined) {
+                routine = await this.routineRepository.findById(entry.routineId);
+                routineCache.set(entry.routineId, routine);
+            }
+            if (!routine) {
+                throw new NotFoundException(
+                    `Rutina ${entry.routineId} no encontrada`,
+                );
+            }
+            const valid = routine.days.some(
+                (d) => d.id === entry.routineDayId,
+            );
+            if (!valid) {
                 throw new BadRequestException(
-                    `El dia "${weekday}" referencia un routine_day (${dayId}) que no pertenece a la rutina`,
+                    `El día "${entry.weekday}" referencia un routine_day que no pertenece a la rutina`,
                 );
             }
         }
 
-        const assignment = await this.assignmentRepository.assign({
-            memberId: payload.memberId,
-            routineId: payload.routineId,
+        const schedule = await this.scheduleRepository.replaceForMember(
+            memberId,
+            payload.entries.map((e) => ({
+                weekday: e.weekday,
+                routineId: e.routineId,
+                routineDayId: e.routineDayId,
+            })),
             assignedBy,
-            dayMapping: payload.dayMapping,
-            startsAt: payload.startsAt ? new Date(payload.startsAt) : new Date(),
-            endsAt: payload.endsAt ? new Date(payload.endsAt) : null,
-        });
-
-        await this.eventPublisher.publish('members.routine.assigned', {
-            memberId: payload.memberId,
-            routineId: payload.routineId,
-            assignmentId: assignment.id,
-        });
-        return assignment;
-    }
-
-    async getMemberAssignment(
-        memberId: string,
-    ): Promise<RoutineAssignmentModel | null> {
-        return this.assignmentRepository.findActiveByMemberId(memberId);
-    }
-
-    /** Bundle para la app del miembro: asignacion activa + rutina completa. */
-    async getMemberBundle(memberId: string): Promise<MemberRoutineBundle> {
-        const assignment =
-            await this.assignmentRepository.findActiveByMemberId(memberId);
-        if (!assignment) {
-            return { assignment: null, routine: null };
-        }
-        const routine = await this.routineRepository.findById(
-            assignment.routineId,
         );
-        return { assignment, routine };
+
+        await this.eventPublisher.publish('members.routine.scheduled', {
+            memberId,
+        });
+        return schedule;
+    }
+
+    /** Horario semanal resuelto (rutina + día + ejercicios) de un miembro. */
+    async getMemberSchedule(memberId: string): Promise<ScheduledDay[]> {
+        return this.scheduleRepository.findByMemberId(memberId);
     }
 }

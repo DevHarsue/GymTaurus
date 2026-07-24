@@ -37,6 +37,16 @@ export class LogSetDto {
     weightDone?: number;
 
     @IsOptional()
+    @IsInt()
+    @Min(0)
+    durationDone?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    distanceDone?: number;
+
+    @IsOptional()
     @IsBoolean()
     done?: boolean;
 }

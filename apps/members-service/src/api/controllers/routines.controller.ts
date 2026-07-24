@@ -31,9 +31,9 @@ import {
 import { MembersService } from '../../application/services/members.service';
 import { RoutinesService } from '../../application/services/routines.service';
 import { WorkoutLogsService } from '../../application/services/workout-logs.service';
-import { AssignRoutineDto } from '../dtos/assign-routine.dto';
 import { CreateRoutineDto } from '../dtos/create-routine.dto';
 import { UpdateRoutineDto } from '../dtos/update-routine.dto';
+import { SetMemberScheduleDto } from '../dtos/set-member-schedule.dto';
 import { LogWorkoutDto } from '../dtos/log-workout.dto';
 import { IdempotencyInterceptor } from '../interceptors/idempotency.interceptor';
 
@@ -46,14 +46,14 @@ export class RoutinesController {
         private readonly membersService: MembersService,
     ) {}
 
-    // ─── Gestion (admin) ────────────────────────────────────────────────
+    // ─── Gestión de rutinas (admin) ─────────────────────────────────────
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @UseInterceptors(IdempotencyInterceptor)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Crear una rutina (con dias y ejercicios)' })
+    @ApiOperation({ summary: 'Crear una rutina (con días y ejercicios)' })
     @ApiResponse({ status: 201, description: 'Rutina creada' })
     create(@Body() payload: CreateRoutineDto, @CurrentUser() user: JwtPayload) {
         return this.routinesService.createRoutine(payload, user.sub);
@@ -68,35 +68,22 @@ export class RoutinesController {
         return this.routinesService.listRoutines();
     }
 
-    @Post('assign')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @UseInterceptors(IdempotencyInterceptor)
-    @Roles(Role.ADMIN)
-    @ApiBearerAuth()
-    @ApiOperation({
-        summary: 'Asignar una rutina a un miembro por dia de semana',
-    })
-    @ApiNotFoundResponse({ description: 'Rutina no encontrada' })
-    assign(@Body() payload: AssignRoutineDto, @CurrentUser() user: JwtPayload) {
-        return this.routinesService.assignRoutine(payload, user.sub);
-    }
-
     // ─── Miembro autenticado (offline-first) ────────────────────────────
 
     @Get('me')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: 'Bundle de la rutina del miembro autenticado (asignacion + rutina)',
+        summary: 'Horario semanal del miembro autenticado (rutina por día)',
     })
-    async findMyRoutine(@CurrentUser() user: JwtPayload) {
+    async findMySchedule(@CurrentUser() user: JwtPayload) {
         const member = await this.membersService.getMemberByUserId(user.sub);
         if (!member) {
             throw new NotFoundException(
                 'No existe un perfil de miembro asociado a este usuario',
             );
         }
-        return this.routinesService.getMemberBundle(member.id);
+        return this.routinesService.getMemberSchedule(member.id);
     }
 
     @Get('me/history')
@@ -105,7 +92,7 @@ export class RoutinesController {
     @ApiOperation({
         summary: 'Historial de entrenamientos del miembro autenticado',
     })
-    @ApiQuery({ name: 'limit', required: false, description: 'Maximo de registros' })
+    @ApiQuery({ name: 'limit', required: false, description: 'Máximo de registros' })
     async findMyHistory(
         @CurrentUser() user: JwtPayload,
         @Query('limit') limit?: string,
@@ -127,7 +114,7 @@ export class RoutinesController {
     @UseInterceptors(IdempotencyInterceptor)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: 'Registrar un entrenamiento (pesos/reps reales) del miembro',
+        summary: 'Registrar un entrenamiento del miembro (reps/peso/tiempo/distancia)',
     })
     @ApiResponse({ status: 201, description: 'Entrenamiento registrado' })
     async logMyWorkout(
@@ -143,25 +130,47 @@ export class RoutinesController {
         return this.workoutLogsService.logWorkout(member.id, payload);
     }
 
-    // ─── Consulta de asignacion de un miembro (admin) ───────────────────
+    // ─── Horario semanal de un miembro (admin) ──────────────────────────
 
-    @Get('member/:memberId/assignment')
+    @Get('member/:memberId/schedule')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Obtener la asignacion activa de un miembro' })
+    @ApiOperation({ summary: 'Obtener el horario semanal de un miembro' })
     @ApiParam({ name: 'memberId', description: 'UUID del miembro' })
-    getMemberAssignment(@Param('memberId') memberId: string) {
-        return this.routinesService.getMemberAssignment(memberId);
+    getMemberSchedule(@Param('memberId') memberId: string) {
+        return this.routinesService.getMemberSchedule(memberId);
     }
 
-    // ─── Detalle / edicion de una rutina (admin) ────────────────────────
+    @Put('member/:memberId/schedule')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @UseInterceptors(IdempotencyInterceptor)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Definir el horario semanal de un miembro (rutina por día)',
+    })
+    @ApiParam({ name: 'memberId', description: 'UUID del miembro' })
+    @ApiNotFoundResponse({ description: 'Rutina no encontrada' })
+    setMemberSchedule(
+        @Param('memberId') memberId: string,
+        @Body() payload: SetMemberScheduleDto,
+        @CurrentUser() user: JwtPayload,
+    ) {
+        return this.routinesService.setMemberSchedule(
+            memberId,
+            payload,
+            user.sub,
+        );
+    }
+
+    // ─── Detalle / edición de una rutina (admin) ────────────────────────
 
     @Get(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Detalle completo de una rutina (dias + ejercicios)' })
+    @ApiOperation({ summary: 'Detalle completo de una rutina (días + ejercicios)' })
     @ApiParam({ name: 'id', description: 'UUID de la rutina' })
     @ApiNotFoundResponse({ description: 'Rutina no encontrada' })
     findById(@Param('id') id: string) {
@@ -173,7 +182,7 @@ export class RoutinesController {
     @UseInterceptors(IdempotencyInterceptor)
     @Roles(Role.ADMIN)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Actualizar una rutina (reemplaza dias/ejercicios)' })
+    @ApiOperation({ summary: 'Actualizar una rutina (reemplaza días/ejercicios)' })
     @ApiParam({ name: 'id', description: 'UUID de la rutina' })
     @ApiNotFoundResponse({ description: 'Rutina no encontrada' })
     update(@Param('id') id: string, @Body() payload: UpdateRoutineDto) {

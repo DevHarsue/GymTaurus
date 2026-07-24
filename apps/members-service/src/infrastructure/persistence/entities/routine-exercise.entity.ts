@@ -29,6 +29,14 @@ export class RoutineExerciseEntity {
     @Column({ type: 'varchar', length: 150, name: 'exercise_name' })
     exerciseName!: string;
 
+    @Column({
+        type: 'varchar',
+        length: 20,
+        name: 'measurement_type',
+        default: 'weight_reps',
+    })
+    measurementType!: string;
+
     @Column({ type: 'int', name: 'order_index', default: 0 })
     orderIndex!: number;
 
@@ -40,6 +48,12 @@ export class RoutineExerciseEntity {
 
     @Column({ type: 'varchar', length: 40, nullable: true })
     weight?: string | null;
+
+    @Column({ type: 'int', name: 'duration_seconds', nullable: true })
+    durationSeconds?: number | null;
+
+    @Column({ type: 'varchar', length: 40, nullable: true })
+    distance?: string | null;
 
     @Column({ type: 'int', name: 'rest_seconds', nullable: true })
     restSeconds?: number | null;
