@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+*.log
+docs
+mosquitto
+migrations
+init.sql
+init-mongo.js
+docker-compose.yml
+nginx.conf
+render.yaml
+README.md

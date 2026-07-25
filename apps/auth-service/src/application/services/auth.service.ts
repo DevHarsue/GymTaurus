@@ -24,6 +24,9 @@ import { type PasswordResetTokenRepositoryPort } from '../ports/password-reset-t
  */
 const OAUTH_NO_PASSWORD = 'GOOGLE_OAUTH';
 
+/** Normaliza el correo para comparaciones/almacenamiento (case-insensitive). */
+const normalizeEmail = (email: string): string => email.trim().toLowerCase();
+
 @Injectable()
 export class AuthService {
     private googleClient: OAuth2Client;
@@ -49,6 +52,7 @@ export class AuthService {
         password: string,
         role: Role,
     ): Promise<{ id: string; email: string; role: Role }> {
+        email = normalizeEmail(email);
         const existing = await this.userRepository.findByEmail(email);
         if (existing) {
             throw new ConflictException('Email already registered');
@@ -72,6 +76,7 @@ export class AuthService {
         refreshToken: string;
         user: { id: string; email: string; role: Role };
     }> {
+        email = normalizeEmail(email);
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
@@ -141,6 +146,7 @@ export class AuthService {
                 throw new BadRequestException('Either idToken or accessToken is required');
             }
 
+            email = normalizeEmail(email);
             let user = await this.userRepository.findByEmail(email);
             let isNewUser = false;
 
@@ -248,6 +254,7 @@ export class AuthService {
     async forgotPassword(
         email: string,
     ): Promise<{ message: string }> {
+        email = normalizeEmail(email);
         const user = await this.userRepository.findByEmail(email);
 
         if (user) {

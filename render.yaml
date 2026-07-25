@@ -1,0 +1,203 @@
+# ============================================================
+# TAURUS GYM — Blueprint de Render
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Despliega: auth-service, members-service, access-service
+# (Docker, monorepo NestJS) + Postgres 16 + Key Value (Redis).
+#
+# NO incluidos (Render no los soporta):
+#   - MongoDB  -> usar MongoDB Atlas (ACCESS_MONGO_URI, se pide al crear)
+#   - Mosquitto -> Render no expone TCP público; usar HiveMQ Cloud /
+#     EMQX Cloud y pasar la URL en MQTT_URL (mqtts://user:pass@host:8883)
+#   - nginx    -> innecesario: Render da HTTPS + subdominio por servicio
+# ============================================================
+
+services:
+    # ── auth-service ─────────────────────────────────────────
+    - type: web
+      name: taurus-auth
+      runtime: docker
+      region: virginia # la más cercana a LATAM (alternativas: oregon, ohio, frankfurt)
+      plan: free # producción: starter ($7/mes, sin spin-down)
+      dockerfilePath: ./apps/auth-service/Dockerfile
+      dockerContext: .
+      healthCheckPath: /auth/health
+      autoDeployTrigger: commit
+      buildFilter:
+          paths:
+              - apps/auth-service/**
+              - libs/**
+              - package.json
+              - package-lock.json
+              - nest-cli.json
+              - tsconfig*.json
+      envVars:
+          - fromGroup: taurus-shared
+          # Render enruta el tráfico al puerto 10000 por defecto
+          - key: AUTH_SERVICE_PORT
+            value: '10000'
+          - key: AUTH_DB_HOST
+            fromDatabase:
+                name: taurus-db
+                property: host
+          - key: AUTH_DB_PORT
+            fromDatabase:
+                name: taurus-db
+                property: port
+          - key: AUTH_DB_NAME
+            fromDatabase:
+                name: taurus-db
+                property: database
+          - key: AUTH_DB_USER
+            fromDatabase:
+                name: taurus-db
+                property: user
+          - key: AUTH_DB_PASSWORD
+            fromDatabase:
+                name: taurus-db
+                property: password
+          - key: REDIS_HOST
+            fromService:
+                type: keyvalue
+                name: taurus-kv
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: keyvalue
+                name: taurus-kv
+                property: port
+          - key: GOOGLE_CLIENT_ID
+            sync: false # se pide al crear el Blueprint
+
+    # ── members-service ──────────────────────────────────────
+    - type: web
+      name: taurus-members
+      runtime: docker
+      region: virginia
+      plan: free
+      dockerfilePath: ./apps/members-service/Dockerfile
+      dockerContext: .
+      healthCheckPath: /members/health
+      autoDeployTrigger: commit
+      buildFilter:
+          paths:
+              - apps/members-service/**
+              - libs/**
+              - package.json
+              - package-lock.json
+              - nest-cli.json
+              - tsconfig*.json
+      envVars:
+          - fromGroup: taurus-shared
+          - key: MEMBERS_SERVICE_PORT
+            value: '10000'
+          - key: MEMBERS_DB_HOST
+            fromDatabase:
+                name: taurus-db
+                property: host
+          - key: MEMBERS_DB_PORT
+            fromDatabase:
+                name: taurus-db
+                property: port
+          - key: MEMBERS_DB_NAME
+            fromDatabase:
+                name: taurus-db
+                property: database
+          - key: MEMBERS_DB_USER
+            fromDatabase:
+                name: taurus-db
+                property: user
+          - key: MEMBERS_DB_PASSWORD
+            fromDatabase:
+                name: taurus-db
+                property: password
+          - key: REDIS_HOST
+            fromService:
+                type: keyvalue
+                name: taurus-kv
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: keyvalue
+                name: taurus-kv
+                property: port
+          # URL pública del auth-service (https://taurus-auth-xxxx.onrender.com)
+          - key: AUTH_SERVICE_BASE_URL
+            fromService:
+                type: web
+                name: taurus-auth
+                envVarKey: RENDER_EXTERNAL_URL
+
+    # ── access-service ───────────────────────────────────────
+    - type: web
+      name: taurus-access
+      runtime: docker
+      region: virginia
+      plan: free
+      dockerfilePath: ./apps/access-service/Dockerfile
+      dockerContext: .
+      healthCheckPath: /access/health
+      autoDeployTrigger: commit
+      buildFilter:
+          paths:
+              - apps/access-service/**
+              - libs/**
+              - package.json
+              - package-lock.json
+              - nest-cli.json
+              - tsconfig*.json
+      envVars:
+          - fromGroup: taurus-shared
+          - key: ACCESS_SERVICE_PORT
+            value: '10000'
+          # Connection string de MongoDB Atlas (mongodb+srv://...)
+          - key: ACCESS_MONGO_URI
+            sync: false
+          - key: REDIS_HOST
+            fromService:
+                type: keyvalue
+                name: taurus-kv
+                property: host
+          - key: REDIS_PORT
+            fromService:
+                type: keyvalue
+                name: taurus-kv
+                property: port
+          - key: MEMBERS_SERVICE_BASE_URL
+            fromService:
+                type: web
+                name: taurus-members
+                envVarKey: RENDER_EXTERNAL_URL
+
+    # ── Key Value (Redis/Valkey para Bull + ioredis) ─────────
+    - type: keyvalue
+      name: taurus-kv
+      region: virginia
+      plan: free # 25 MB, sin persistencia; producción: starter ($10/mes)
+      maxmemoryPolicy: noeviction # requerido para colas Bull (no descartar jobs)
+      ipAllowList: [] # solo accesible desde la red privada de Render
+
+# ── Variables compartidas por los 3 servicios ────────────────
+envVarGroups:
+    - name: taurus-shared
+      envVars:
+          - key: JWT_SECRET
+            generateValue: true # un solo secreto compartido, generado por Render
+          - key: JWT_EXPIRES_IN
+            value: 15m
+          - key: JWT_REFRESH_EXPIRES_IN
+            value: 7d
+          # MQTT desactivado por ahora: los gateways reintentan en background
+          # sin tumbar el servicio. Cuando tengas broker (HiveMQ/EMQX),
+          # descomenta y pon mqtts://user:pass@host:8883
+          # - key: MQTT_URL
+          #   sync: false
+
+# ── PostgreSQL gestionado ────────────────────────────────────
+databases:
+    - name: taurus-db
+      region: virginia
+      plan: free # ¡OJO: el plan free EXPIRA a los 30 días! Producción: basic-256mb ($6/mes)
+      postgresMajorVersion: '16'
+      # Tras crearla, ejecutar manualmente init.sql y migrations/*.sql
+      # con psql usando la "External Connection String" del dashboard.
