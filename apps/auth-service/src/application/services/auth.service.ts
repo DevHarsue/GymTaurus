@@ -79,12 +79,22 @@ export class AuthService {
         email = normalizeEmail(email);
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException({
+                statusCode: 401,
+                error: 'Unauthorized',
+                code: 'EMAIL_NOT_FOUND',
+                message: 'No existe una cuenta con este correo',
+            });
         }
 
         const passwordValid = await bcrypt.compare(password, user.passwordHash);
         if (!passwordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException({
+                statusCode: 401,
+                error: 'Unauthorized',
+                code: 'INVALID_PASSWORD',
+                message: 'Contrasena incorrecta',
+            });
         }
 
         await this.refreshTokenRepository.deleteExpiredByUserId(user.id);

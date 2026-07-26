@@ -6,8 +6,10 @@ export class LoginRequestDto {
     @IsEmail()
     email!: string;
 
+    // Sin politica de longitud aqui: en el login una clave corta e incorrecta
+    // debe responder 401 "Contrasena incorrecta", no un 400 de validacion.
     @ApiProperty({ example: 'Admin123!' })
     @IsString()
-    @MinLength(8)
+    @MinLength(1)
     password!: string;
 }
