@@ -164,6 +164,25 @@ export class RoutinesController {
         );
     }
 
+    @Get('member/:memberId/history')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.ADMIN)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Historial de entrenamientos de un miembro (seguimiento admin)',
+    })
+    @ApiParam({ name: 'memberId', description: 'UUID del miembro' })
+    @ApiQuery({ name: 'limit', required: false, description: 'Máximo de registros' })
+    getMemberHistory(
+        @Param('memberId') memberId: string,
+        @Query('limit') limit?: string,
+    ) {
+        return this.workoutLogsService.getHistory(
+            memberId,
+            limit ? parseInt(limit, 10) : undefined,
+        );
+    }
+
     // ─── Detalle / edición de una rutina (admin) ────────────────────────
 
     @Get(':id')

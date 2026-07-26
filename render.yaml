@@ -187,11 +187,10 @@ envVarGroups:
             value: 15m
           - key: JWT_REFRESH_EXPIRES_IN
             value: 7d
-          # MQTT desactivado por ahora: los gateways reintentan en background
-          # sin tumbar el servicio. Cuando tengas broker (HiveMQ/EMQX),
-          # descomenta y pon mqtts://user:pass@host:8883
-          # - key: MQTT_URL
-          #   sync: false
+          # Broker MQTT en HiveMQ Cloud (TLS). Valor: mqtts://user:pass@host:8883
+          # (se ingresa en el dashboard al sincronizar; nunca en el repo)
+          - key: MQTT_URL
+            sync: false
 
 # ── PostgreSQL gestionado ────────────────────────────────────
 databases:

@@ -1,10 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    // Acepta el prefijo /api que en local reescribe nginx, para poder
+    // consumir el servicio directamente (p. ej. en Render) sin gateway.
+    app.use((req: Request, _res: Response, next: NextFunction) => {
+        if (req.url.startsWith('/api/')) {
+            req.url = req.url.slice(4);
+        }
+        next();
+    });
     app.enableCors();
     app.useGlobalPipes(
         new ValidationPipe({
